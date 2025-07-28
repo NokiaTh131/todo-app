@@ -1,4 +1,4 @@
-# Todo App Monorepo
+# Todo App
 
 ## Overview
 Simple Trello-like kanban board application where users can access their personal boards, create lists, manage cards, and handle checklist items within cards.
@@ -11,37 +11,6 @@ Simple Trello-like kanban board application where users can access their persona
 
 ## Backend (NestJS)
 **Location:** `backend/`
-
-### Setup
-```bash
-cd backend
-pnpm install
-```
-
-### Development
-```bash
-pnpm start:dev    # Start with hot reload
-pnpm start:debug  # Start with debugger
-```
-
-### Production
-```bash
-pnpm build
-pnpm start:prod
-```
-
-### Testing
-```bash
-pnpm test         # Unit tests
-pnpm test:e2e     # E2E tests
-pnpm test:cov     # Coverage report
-```
-
-### Code Quality
-```bash
-pnpm lint         # ESLint
-pnpm format       # Prettier
-```
 
 ## Frontend
 **Location:** `frontend/`
@@ -62,3 +31,5 @@ pnpm format       # Prettier
 
 ## Database
 Backend uses TypeORM with PostgreSQL. Configure connection in backend environment variables.
+
+<img width="1178" height="1088" alt="TodoApp" src="https://github.com/user-attachments/assets/125bf521-7176-4538-ba70-dc29e31436ea" />
