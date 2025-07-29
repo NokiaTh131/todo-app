@@ -36,6 +36,21 @@ export class UserService {
     }
   }
 
+  async findByEmail(email: string): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (!user) {
+        throw new Error(`User with email ${email} not found`);
+      }
+      return user;
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        throw error;
+      }
+      throw new Error(`Failed to find user: ${error.message}`);
+    }
+  }
+
   async update(id: string, userData: UpdateUserDto): Promise<User> {
     try {
       const result = await this.userRepository.update(id, userData);
