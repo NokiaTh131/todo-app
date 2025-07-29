@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User {
@@ -46,4 +49,16 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
+
+  async hashPassword() {
+    if (this.password && !this.password.startsWith('$2a$')) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
+
+  // Optional: method to compare passwords
+  async comparePassword(plain: string): Promise<boolean> {
+    return bcrypt.compare(plain, this.password);
+  }
 }
