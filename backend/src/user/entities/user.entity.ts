@@ -11,8 +11,8 @@ import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({
     type: 'varchar',
@@ -50,6 +50,8 @@ export class User {
   })
   updated_at: Date;
 
+  @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword() {
     if (this.password && !this.password.startsWith('$2a$')) {
       const salt = await bcrypt.genSalt(10);

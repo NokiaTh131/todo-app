@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -10,7 +12,7 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(userData: Partial<User>): Promise<User> {
+  async create(userData: CreateUserDto): Promise<User> {
     try {
       const user = this.userRepository.create(userData);
       return await this.userRepository.save(user);
@@ -19,15 +21,7 @@ export class UserService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    try {
-      return await this.userRepository.find();
-    } catch (error) {
-      throw new Error(`Failed to retrieve users: ${error.message}`);
-    }
-  }
-
-  async findOne(id: number): Promise<User> {
+  async findOne(id: string): Promise<User> {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
       if (!user) {
@@ -42,7 +36,7 @@ export class UserService {
     }
   }
 
-  async update(id: number, userData: Partial<User>): Promise<User> {
+  async update(id: string, userData: UpdateUserDto): Promise<User> {
     try {
       const result = await this.userRepository.update(id, userData);
       if (result.affected === 0) {
@@ -57,7 +51,7 @@ export class UserService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     try {
       const result = await this.userRepository.delete(id);
       if (result.affected === 0) {
