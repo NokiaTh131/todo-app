@@ -1,29 +1,300 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Todo App API Documentation
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Base URL
+```
+http://localhost:3000
+```
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Authentication
+All endpoints require JWT Bearer token in Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🔐 Authentication Endpoints
+
+### Register User
+```http
+POST /auth/register
+Content-Type: application/json
+
+{
+  "username": "string",
+  "email": "string", 
+  "password": "string"
+}
+```
+
+### Login
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "string",
+  "password": "string"
+}
+```
+**Response:** JWT token for authentication
+
+---
+
+## 👤 User Endpoints
+
+### Get Profile
+```http
+GET /users/profile
+Authorization: Bearer <token>
+```
+
+---
+
+## 📋 Board Endpoints
+
+### Create Board
+```http
+POST /boards
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string",
+  "description": "string" (optional),
+  "background_color": "string" (optional, default: "#ffffff")
+}
+```
+
+### Get User's Boards
+```http
+GET /boards
+Authorization: Bearer <token>
+```
+
+### Get Single Board
+```http
+GET /boards/:id
+Authorization: Bearer <token>
+```
+
+### Update Board
+```http
+PATCH /boards/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string" (optional),
+  "description": "string" (optional),
+  "background_color": "string" (optional)
+}
+```
+
+### Delete Board
+```http
+DELETE /boards/:id
+Authorization: Bearer <token>
+```
+**Response:** `{ "message": "Board removed successfully" }`
+
+---
+
+## 📝 List Endpoints
+
+### Create List in Board
+```http
+POST /lists/board/:boardId
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string",
+  "position": "number" (optional, auto-assigns if not provided)
+}
+```
+
+### Get Lists for Board
+```http
+GET /lists/board/:boardId
+Authorization: Bearer <token>
+```
+**Response:** Lists ordered by position (ascending) with their cards
+
+### Get Single List
+```http
+GET /lists/:id
+Authorization: Bearer <token>
+```
+**Response:** List with its cards
+
+### Update List
+```http
+PATCH /lists/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "string" (optional),
+  "position": "number" (optional)
+}
+```
+
+### Delete List
+```http
+DELETE /lists/:id
+Authorization: Bearer <token>
+```
+**Response:** `{ "message": "List removed successfully" }`
+
+---
+
+## 🎯 Card Endpoints
+
+### Create Card in List
+```http
+POST /cards/list/:listId
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "title": "string",
+  "description": "string" (optional),
+  "position": "number" (optional, auto-assigns if not provided),
+  "due_date": "string" (optional, ISO date format),
+  "cover_color": "string" (optional, default: "#ffffff")
+}
+```
+
+### Get Cards for List
+```http
+GET /cards/list/:listId
+Authorization: Bearer <token>
+```
+**Response:** Cards ordered by position (ascending)
+
+### Get Single Card
+```http
+GET /cards/:id
+Authorization: Bearer <token>
+```
+
+### Update Card
+```http
+PATCH /cards/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "title": "string" (optional),
+  "description": "string" (optional),
+  "position": "number" (optional),
+  "due_date": "string" (optional, ISO date format),
+  "cover_color": "string" (optional)
+}
+```
+
+### Move Card to Different List
+```http
+PUT /cards/:id/move
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "newListId": "string",
+  "newPosition": "number" (optional, moves to end if not provided)
+}
+```
+
+### Delete Card
+```http
+DELETE /cards/:id
+Authorization: Bearer <token>
+```
+**Response:** `{ "message": "Card removed successfully" }`
+
+---
+
+## 📊 Data Models
+
+### User
+```json
+{
+  "id": "uuid",
+  "username": "string",
+  "email": "string",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+### Board
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "description": "string",
+  "background_color": "string",
+  "user_id": "uuid",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+### List
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "position": "number",
+  "board_id": "uuid",
+  "created_at": "timestamp",
+  "cards": "Card[]" (when included)
+}
+```
+
+### Card
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "description": "string",
+  "position": "number",
+  "due_date": "timestamp",
+  "cover_color": "string",
+  "list_id": "uuid",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+---
+
+## ⚠️ Important Notes
+
+### Position Management
+- **Unique Constraints:** Each list must have unique position within a board, each card must have unique position within a list
+- **Auto-positioning:** If position not provided, items are added to the end
+- **Manual positioning:** If position is provided, it must be unique or will result in constraint error
+- **Frontend Responsibility:** Frontend should handle position reordering and gap management
+
+### Error Responses
+- **400:** Bad Request (validation errors)
+- **401:** Unauthorized (missing/invalid token)
+- **404:** Not Found (resource doesn't exist)
+- **500:** Internal Server Error (database/server errors)
+
+### Date Format
+Use ISO 8601 format for dates: `"2024-12-31T23:59:59.000Z"`
+
+### Cascade Deletes
+- Deleting a user → deletes all their boards → deletes all lists → deletes all cards
+- Deleting a board → deletes all its lists → deletes all cards in those lists
+- Deleting a list → deletes all its cards
+
+---
+
+## Setup Instructions
 
 ## Project setup
 
