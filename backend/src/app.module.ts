@@ -2,10 +2,15 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './user/entities/user.entity';
+import { Board } from './board/entities/board.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { BoardModule } from './board/board.module';
+import { ListModule } from './list/list.module';
+import { List } from './list/entities/list.entity';
+import { CardModule } from './card/card.module';
 
 @Module({
   imports: [
@@ -21,7 +26,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get('POSTGRES_APP_USER'),
         password: configService.get('POSTGRES_APP_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [User],
+        entities: [User, Board, List],
         synchronize: process.env.NODE_ENV !== 'production',
         logging: process.env.NODE_ENV === 'development',
       }),
@@ -29,6 +34,9 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    BoardModule,
+    ListModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

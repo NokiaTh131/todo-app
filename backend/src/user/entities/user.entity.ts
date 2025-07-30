@@ -6,7 +6,9 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
+import { Board } from '../../board/entities/board.entity';
 import * as bcrypt from 'bcrypt';
 
 @Entity('users')
@@ -49,6 +51,9 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updated_at: Date;
+
+  @OneToMany(() => Board, (board) => board.user, { cascade: true })
+  boards: Board[];
 
   @BeforeInsert()
   @BeforeUpdate()
