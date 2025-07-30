@@ -5,8 +5,10 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { Card } from '../../card/entities/card.entity';
 
 @Entity('lists')
 export class List {
@@ -35,4 +37,7 @@ export class List {
   @ManyToOne(() => Board, (board) => board.lists, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'board_id' })
   board: Board;
+
+  @OneToMany(() => Card, (card) => card.list, { cascade: true })
+  cards: Card[];
 }

@@ -11,6 +11,7 @@ import { BoardModule } from './board/board.module';
 import { ListModule } from './list/list.module';
 import { List } from './list/entities/list.entity';
 import { CardModule } from './card/card.module';
+import { Card } from './card/entities/card.entity';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { CardModule } from './card/card.module';
         username: configService.get('POSTGRES_APP_USER'),
         password: configService.get('POSTGRES_APP_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [User, Board, List],
+        entities: [User, Board, List, Card],
         synchronize: process.env.NODE_ENV !== 'production',
         logging: process.env.NODE_ENV === 'development',
       }),

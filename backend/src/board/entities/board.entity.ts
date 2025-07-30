@@ -26,7 +26,7 @@ export class Board {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'varchar', length: 7, nullable: true })
+  @Column({ type: 'varchar', length: 7, nullable: true, default: '#ffffff' })
   background_color: string;
 
   @Column({ name: 'user_id', nullable: false })
