@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Put,
+} from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createBoardDto: CreateBoardDto) {
-    return this.boardService.create(createBoardDto);
+  async create(@Body() createBoardDto: CreateBoardDto, @Request() req: any) {
+    return this.boardService.create(req.user.userId, createBoardDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.boardService.findAll();
+  async findBelongsToUser(@Request() req: any) {
+    return this.boardService.findBelongsToUser(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.boardService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.boardService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
-    return this.boardService.update(+id, updateBoardDto);
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateBoardDto: UpdateBoardDto,
+  ) {
+    return this.boardService.update(id, updateBoardDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.boardService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return this.boardService.remove(id);
   }
 }
