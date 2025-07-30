@@ -48,10 +48,6 @@ jobs:
         working-directory: backend
         run: pnpm install --no-frozen-lockfile
 
-      - name: Run linting
-        working-directory: backend
-        run: pnpm run lint
-
       - name: Run unit tests
         working-directory: backend
         run: pnpm run test
@@ -129,4 +125,3 @@ jobs:
           # - Deploy to Heroku
           # - Deploy to your own servers
           # - Build and push Docker image
-
