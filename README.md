@@ -32,4 +32,4 @@ Simple Trello-like kanban board application where users can access their persona
 ## Database
 Backend uses TypeORM with PostgreSQL. Configure connection in backend environment variables.
 
-<img width="1178" height="1088" alt="TodoApp" src="https://github.com/user-attachments/assets/125bf521-7176-4538-ba70-dc29e31436ea" />
+<img width="1145" height="813" alt="todoapp (1)" src="https://github.com/user-attachments/assets/c4169bb2-175d-4ea0-a8f1-e6589e2d5277" />
