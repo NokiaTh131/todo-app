@@ -7,10 +7,12 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { Card } from '../../card/entities/card.entity';
 
 @Entity('lists')
+@Unique(['board_id', 'position'])
 export class List {
   @PrimaryGeneratedColumn('uuid')
   id: string;
