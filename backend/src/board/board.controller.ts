@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -33,8 +32,8 @@ export class BoardController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.boardService.findOne(id);
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    return this.boardService.findOne(id, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -42,13 +41,14 @@ export class BoardController {
   async update(
     @Param('id') id: string,
     @Body() updateBoardDto: UpdateBoardDto,
+    @Request() req: any,
   ) {
-    return this.boardService.update(id, updateBoardDto);
+    return this.boardService.update(id, updateBoardDto, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.boardService.remove(id);
+  async remove(@Param('id') id: string, @Request() req: any) {
+    return this.boardService.remove(id, req.user.userId);
   }
 }

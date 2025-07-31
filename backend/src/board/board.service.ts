@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { Board } from './entities/board.entity';
@@ -21,7 +21,9 @@ export class BoardService {
       const board = this.boardRepository.create(payload);
       return await this.boardRepository.save(board);
     } catch (error) {
-      throw new Error(`Failed to create board: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create board: ${error.message}`,
+      );
     }
   }
 
@@ -32,51 +34,78 @@ export class BoardService {
       });
       return boards;
     } catch (error) {
-      throw new Error(`Failed to find boards: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to find boards: ${error.message}`,
+      );
     }
   }
 
-  async findOne(boardId: string): Promise<Board> {
+  async findOne(boardId: string, userId: string): Promise<Board> {
     try {
       const board = await this.boardRepository.findOne({
-        where: { id: boardId },
+        where: { id: boardId, user_id: userId },
       });
       if (!board) {
-        throw new Error(`Board with ID ${boardId} not found`);
+        throw new InternalServerErrorException(
+          `Board with ID ${boardId} not found or access denied`,
+        );
       }
       return board;
     } catch (error) {
-      throw new Error(`Failed to find board: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to find board: ${error.message}`,
+      );
     }
   }
 
-  async update(id: string, updateBoardDto: UpdateBoardDto): Promise<Board> {
+  async update(
+    id: string,
+    updateBoardDto: UpdateBoardDto,
+    userId: string,
+  ): Promise<Board> {
     try {
-      const result = await this.boardRepository.update(id, updateBoardDto);
+      const result = await this.boardRepository.update(
+        { id, user_id: userId },
+        updateBoardDto,
+      );
       if (result.affected === 0) {
-        throw new Error(`Board with ID ${id} not found`);
+        throw new InternalServerErrorException(
+          `Board with ID ${id} not found or access denied`,
+        );
       }
-      return await this.findOne(id);
+      return await this.findOne(id, userId);
     } catch (error) {
-      if (error.message.includes('not found')) {
+      if (
+        error.message.includes('not found') ||
+        error.message.includes('access denied')
+      ) {
         throw error;
       }
-      throw new Error(`Failed to update board: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update board: ${error.message}`,
+      );
     }
   }
 
-  async remove(id: string): Promise<{ message: string }> {
+  async remove(id: string, userId: string): Promise<{ message: string }> {
     try {
-      const result = await this.boardRepository.delete(id);
+      const result = await this.boardRepository.delete({ id, user_id: userId });
       if (result.affected === 0) {
-        throw new Error(`Board with ID ${id} not found`);
+        throw new InternalServerErrorException(
+          `Board with ID ${id} not found or access denied`,
+        );
       }
       return { message: 'Board removed successfully' };
     } catch (error) {
-      if (error.message.includes('not found')) {
-        return { message: 'Board not found' };
+      if (
+        error.message.includes('not found') ||
+        error.message.includes('access denied')
+      ) {
+        return { message: 'Board not found or access denied' };
       }
-      throw new Error(`Failed to remove board: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to remove board: ${error.message}`,
+      );
     }
   }
 }

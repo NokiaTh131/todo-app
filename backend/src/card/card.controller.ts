@@ -8,6 +8,7 @@ import {
   Delete,
   Put,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
@@ -23,26 +24,27 @@ export class CardController {
   create(
     @Param('listId') listId: string,
     @Body() createCardDto: CreateCardDto,
+    @Request() req: any,
   ) {
-    return this.cardService.create(listId, createCardDto);
+    return this.cardService.create(listId, createCardDto, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('list/:listId')
-  findByList(@Param('listId') listId: string) {
-    return this.cardService.findByList(listId);
+  findByList(@Param('listId') listId: string, @Request() req: any) {
+    return this.cardService.findByList(listId, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cardService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: any) {
+    return this.cardService.findOne(id, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-    return this.cardService.update(id, updateCardDto);
+  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto, @Request() req: any) {
+    return this.cardService.update(id, updateCardDto, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,17 +52,19 @@ export class CardController {
   moveCard(
     @Param('id') cardId: string,
     @Body() moveData: { newListId: string; newPosition?: number },
+    @Request() req: any,
   ) {
     return this.cardService.moveCard(
       cardId,
       moveData.newListId,
+      req.user.userId,
       moveData.newPosition,
     );
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardService.remove(id);
+  remove(@Param('id') id: string, @Request() req: any) {
+    return this.cardService.remove(id, req.user.userId);
   }
 }
