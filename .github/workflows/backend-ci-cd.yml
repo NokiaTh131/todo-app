@@ -53,6 +53,8 @@ jobs:
         run: |
           PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "CREATE USER testappuser WITH PASSWORD 'testapppass';"
           PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "GRANT ALL PRIVILEGES ON DATABASE tododb_test TO testappuser;"
+          PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "GRANT ALL ON SCHEMA public TO testappuser;"
+          PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "GRANT CREATE ON SCHEMA public TO testappuser;"
 
       - name: Build app (needed for migrations)
         working-directory: backend
