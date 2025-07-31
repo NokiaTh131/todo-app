@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,7 +17,9 @@ export class UserService {
       const user = this.userRepository.create(userData);
       return await this.userRepository.save(user);
     } catch (error) {
-      throw new Error(`Failed to create user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create user: ${error.message}`,
+      );
     }
   }
 
@@ -25,14 +27,16 @@ export class UserService {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
       if (!user) {
-        throw new Error(`User with ID ${id} not found`);
+        throw new InternalServerErrorException(`User with ID ${id} not found`);
       }
       return user;
     } catch (error) {
       if (error.message.includes('not found')) {
         throw error;
       }
-      throw new Error(`Failed to find user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to find user: ${error.message}`,
+      );
     }
   }
 
@@ -40,14 +44,18 @@ export class UserService {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
       if (!user) {
-        throw new Error(`User with email ${email} not found`);
+        throw new InternalServerErrorException(
+          `User with email ${email} not found`,
+        );
       }
       return user;
     } catch (error) {
       if (error.message.includes('not found')) {
         throw error;
       }
-      throw new Error(`Failed to find user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to find user: ${error.message}`,
+      );
     }
   }
 
@@ -55,14 +63,16 @@ export class UserService {
     try {
       const result = await this.userRepository.update(id, userData);
       if (result.affected === 0) {
-        throw new Error(`User with ID ${id} not found`);
+        throw new InternalServerErrorException(`User with ID ${id} not found`);
       }
       return await this.findOne(id);
     } catch (error) {
       if (error.message.includes('not found')) {
         throw error;
       }
-      throw new Error(`Failed to update user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update user: ${error.message}`,
+      );
     }
   }
 
@@ -70,13 +80,15 @@ export class UserService {
     try {
       const result = await this.userRepository.delete(id);
       if (result.affected === 0) {
-        throw new Error(`User with ID ${id} not found`);
+        throw new InternalServerErrorException(`User with ID ${id} not found`);
       }
     } catch (error) {
       if (error.message.includes('not found')) {
         throw error;
       }
-      throw new Error(`Failed to remove user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to remove user: ${error.message}`,
+      );
     }
   }
 }
