@@ -89,10 +89,12 @@ describe('BoardController', () => {
   describe('findOne', () => {
     it('should return a board by id', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
+      const req = { user: { userId: userId } };
 
-      const result = await controller.findOne(boardId);
+      const result = await controller.findOne(boardId, req);
 
-      expect(service.findOne).toHaveBeenCalledWith(boardId);
+      expect(service.findOne).toHaveBeenCalledWith(boardId, userId);
       expect(result).toEqual(mockBoard);
     });
   });
@@ -100,13 +102,15 @@ describe('BoardController', () => {
   describe('update', () => {
     it('should update a board', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
+      const req = { user: { userId: userId } };
       const updateBoardDto: UpdateBoardDto = {
         name: 'Updated Board',
       };
 
-      const result = await controller.update(boardId, updateBoardDto);
+      const result = await controller.update(boardId, updateBoardDto, req);
 
-      expect(service.update).toHaveBeenCalledWith(boardId, updateBoardDto);
+      expect(service.update).toHaveBeenCalledWith(boardId, updateBoardDto, userId);
       expect(result).toEqual(mockBoard);
     });
   });
@@ -114,10 +118,12 @@ describe('BoardController', () => {
   describe('remove', () => {
     it('should remove a board', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
+      const req = { user: { userId: userId } };
 
-      const result = await controller.remove(boardId);
+      const result = await controller.remove(boardId, req);
 
-      expect(service.remove).toHaveBeenCalledWith(boardId);
+      expect(service.remove).toHaveBeenCalledWith(boardId, userId);
       expect(result).toEqual({ message: 'Board removed successfully' });
     });
   });

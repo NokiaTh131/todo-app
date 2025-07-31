@@ -64,9 +64,10 @@ describe('ListController', () => {
       };
       const boardId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await controller.create(boardId, createListDto);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.create(boardId, createListDto, req);
 
-      expect(service.create).toHaveBeenCalledWith(boardId, createListDto);
+      expect(service.create).toHaveBeenCalledWith(boardId, createListDto, 'test-user-id');
       expect(result).toEqual(mockList);
     });
   });
@@ -75,9 +76,10 @@ describe('ListController', () => {
     it('should return all lists for a board', async () => {
       const boardId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await controller.findByBoard(boardId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.findByBoard(boardId, req);
 
-      expect(service.findByBoard).toHaveBeenCalledWith(boardId);
+      expect(service.findByBoard).toHaveBeenCalledWith(boardId, 'test-user-id');
       expect(result).toEqual([mockList]);
     });
   });
@@ -86,9 +88,10 @@ describe('ListController', () => {
     it('should return a list by id', async () => {
       const listId = '123e4567-e89b-12d3-a456-426614174000';
 
-      const result = await controller.findOne(listId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.findOne(listId, req);
 
-      expect(service.findOne).toHaveBeenCalledWith(listId);
+      expect(service.findOne).toHaveBeenCalledWith(listId, 'test-user-id');
       expect(result).toEqual(mockList);
     });
   });
@@ -100,9 +103,11 @@ describe('ListController', () => {
         name: 'Updated List',
       };
 
-      const result = await controller.update(listId, updateListDto);
+      const req = { user: { userId: 'test-user-id' } };
 
-      expect(service.update).toHaveBeenCalledWith(listId, updateListDto);
+      const result = await controller.update(listId, updateListDto, req);
+
+      expect(service.update).toHaveBeenCalledWith(listId, updateListDto, 'test-user-id');
       expect(result).toEqual(mockList);
     });
   });
@@ -111,9 +116,10 @@ describe('ListController', () => {
     it('should remove a list', async () => {
       const listId = '123e4567-e89b-12d3-a456-426614174000';
 
-      const result = await controller.remove(listId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.remove(listId, req);
 
-      expect(service.remove).toHaveBeenCalledWith(listId);
+      expect(service.remove).toHaveBeenCalledWith(listId, 'test-user-id');
       expect(result).toEqual({ message: 'List removed successfully' });
     });
   });

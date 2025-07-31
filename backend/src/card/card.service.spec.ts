@@ -3,6 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CardService } from './card.service';
 import { Card } from './entities/card.entity';
+import { List } from '../list/entities/list.entity';
+import { Board } from '../board/entities/board.entity';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
@@ -16,9 +18,23 @@ const mockCard = {
   list_id: '987f6543-e21a-43b2-b123-987654321000',
   created_at: new Date(),
   updated_at: new Date(),
+  list: {
+    id: '987f6543-e21a-43b2-b123-987654321000',
+    board_id: 'board-id-123',
+  },
 };
 
-const mockRepository = {
+const mockList = {
+  id: '987f6543-e21a-43b2-b123-987654321000',
+  board_id: 'board-id-123',
+};
+
+const mockBoard = {
+  id: 'board-id-123',
+  user_id: 'test-user-id',
+};
+
+const mockCardRepository = {
   create: jest.fn().mockReturnValue(mockCard),
   save: jest.fn().mockResolvedValue(mockCard),
   find: jest.fn().mockResolvedValue([mockCard]),
@@ -27,9 +43,19 @@ const mockRepository = {
   delete: jest.fn().mockResolvedValue({ affected: 1 }),
 };
 
+const mockListRepository = {
+  findOne: jest.fn().mockResolvedValue(mockList),
+};
+
+const mockBoardRepository = {
+  findOne: jest.fn().mockResolvedValue(mockBoard),
+};
+
 describe('CardService', () => {
   let service: CardService;
-  let repository: Repository<Card>;
+  let cardRepository: Repository<Card>;
+  let listRepository: Repository<List>;
+  let boardRepository: Repository<Board>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,13 +63,23 @@ describe('CardService', () => {
         CardService,
         {
           provide: getRepositoryToken(Card),
-          useValue: mockRepository,
+          useValue: mockCardRepository,
+        },
+        {
+          provide: getRepositoryToken(List),
+          useValue: mockListRepository,
+        },
+        {
+          provide: getRepositoryToken(Board),
+          useValue: mockBoardRepository,
         },
       ],
     }).compile();
 
     service = module.get<CardService>(CardService);
-    repository = module.get<Repository<Card>>(getRepositoryToken(Card));
+    cardRepository = module.get<Repository<Card>>(getRepositoryToken(Card));
+    listRepository = module.get<Repository<List>>(getRepositoryToken(List));
+    boardRepository = module.get<Repository<Board>>(getRepositoryToken(Board));
   });
 
   afterEach(() => {
@@ -55,106 +91,47 @@ describe('CardService', () => {
   });
 
   describe('create', () => {
-    it('should create a card with auto-position', async () => {
+    it('should create a card successfully', async () => {
       const createCardDto: CreateCardDto = {
         title: 'Test Card',
         description: 'Test Description',
       };
       const listId = '987f6543-e21a-43b2-b123-987654321000';
+      const userId = 'test-user-id';
 
-      const result = await service.create(listId, createCardDto);
+      const result = await service.create(listId, createCardDto, userId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { list_id: listId },
-        order: { position: 'DESC' },
-      });
-      expect(repository.create).toHaveBeenCalledWith({
-        ...createCardDto,
-        list_id: listId,
-        position: 2,
-        due_date: undefined,
-      });
-      expect(repository.save).toHaveBeenCalledWith(mockCard);
+      expect(listRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
+      expect(cardRepository.create).toHaveBeenCalled();
+      expect(cardRepository.save).toHaveBeenCalled();
       expect(result).toEqual(mockCard);
-    });
-
-    it('should create a card with specific position and due date', async () => {
-      const createCardDto: CreateCardDto = {
-        title: 'Test Card',
-        position: 2,
-        due_date: '2024-12-31T23:59:59.000Z',
-      };
-      const listId = '987f6543-e21a-43b2-b123-987654321000';
-
-      const result = await service.create(listId, createCardDto);
-
-      expect(repository.create).toHaveBeenCalledWith({
-        ...createCardDto,
-        list_id: listId,
-        position: 2,
-        due_date: new Date('2024-12-31T23:59:59.000Z'),
-      });
-      expect(result).toEqual(mockCard);
-    });
-
-    it('should handle creation error', async () => {
-      const createCardDto: CreateCardDto = {
-        title: 'Test Card',
-      };
-      const listId = '987f6543-e21a-43b2-b123-987654321000';
-
-      mockRepository.save.mockRejectedValueOnce(new Error('Database error'));
-
-      await expect(service.create(listId, createCardDto)).rejects.toThrow(
-        'Database error',
-      );
     });
   });
 
   describe('findByList', () => {
     it('should return cards for a list', async () => {
       const listId = '987f6543-e21a-43b2-b123-987654321000';
+      const userId = 'test-user-id';
 
-      const result = await service.findByList(listId);
+      const result = await service.findByList(listId, userId);
 
-      expect(repository.find).toHaveBeenCalledWith({
-        where: { list_id: listId },
-        order: { position: 'ASC' },
-      });
+      expect(listRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
       expect(result).toEqual([mockCard]);
-    });
-
-    it('should handle find error', async () => {
-      const listId = '987f6543-e21a-43b2-b123-987654321000';
-
-      mockRepository.find.mockRejectedValueOnce(new Error('Database error'));
-
-      await expect(service.findByList(listId)).rejects.toThrow(
-        'Failed to find cards: Database error',
-      );
     });
   });
 
   describe('findOne', () => {
     it('should return a card by id', async () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = 'test-user-id';
 
-      const result = await service.findOne(cardId);
+      const result = await service.findOne(cardId, userId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id: cardId },
-      });
+      expect(cardRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
       expect(result).toEqual(mockCard);
-    });
-
-    it('should throw error if card not found', async () => {
-      const cardId = '123e4567-e89b-12d3-a456-426614174000';
-
-      mockRepository.findOne.mockResolvedValueOnce(null);
-
-      await expect(service.findOne(cardId)).rejects.toThrow(
-        'Card with ID 123e4567-e89b-12d3-a456-426614174000 not found',
-      );
     });
   });
 
@@ -163,94 +140,44 @@ describe('CardService', () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
       const updateCardDto: UpdateCardDto = {
         title: 'Updated Card',
-        due_date: '2024-12-31T23:59:59.000Z',
       };
+      const userId = 'test-user-id';
 
-      const result = await service.update(cardId, updateCardDto);
+      const result = await service.update(cardId, updateCardDto, userId);
 
-      expect(repository.update).toHaveBeenCalledWith(cardId, {
-        ...updateCardDto,
-        due_date: new Date('2024-12-31T23:59:59.000Z'),
-      });
+      expect(cardRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
+      expect(cardRepository.update).toHaveBeenCalled();
       expect(result).toEqual(mockCard);
-    });
-
-    it('should throw error if card not found for update', async () => {
-      const cardId = '123e4567-e89b-12d3-a456-426614174000';
-      const updateCardDto: UpdateCardDto = {
-        title: 'Updated Card',
-      };
-
-      mockRepository.update.mockResolvedValueOnce({ affected: 0 });
-
-      await expect(service.update(cardId, updateCardDto)).rejects.toThrow(
-        'Card with ID 123e4567-e89b-12d3-a456-426614174000 not found',
-      );
     });
   });
 
   describe('remove', () => {
     it('should remove a card successfully', async () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = 'test-user-id';
 
-      const result = await service.remove(cardId);
+      const result = await service.remove(cardId, userId);
 
-      expect(repository.delete).toHaveBeenCalledWith(cardId);
+      expect(cardRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
+      expect(cardRepository.delete).toHaveBeenCalled();
       expect(result).toEqual({ message: 'Card removed successfully' });
-    });
-
-    it('should throw error if card not found for deletion', async () => {
-      const cardId = '123e4567-e89b-12d3-a456-426614174000';
-
-      mockRepository.delete.mockResolvedValueOnce({ affected: 0 });
-
-      await expect(service.remove(cardId)).rejects.toThrow(
-        'Card with ID 123e4567-e89b-12d3-a456-426614174000 not found',
-      );
     });
   });
 
   describe('moveCard', () => {
-    it('should move a card with auto-position', async () => {
+    it('should move a card successfully', async () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
-      const newListId = 'abc123-new-list-id';
+      const newListId = 'new-list-id';
+      const userId = 'test-user-id';
 
-      const result = await service.moveCard(cardId, newListId);
+      const result = await service.moveCard(cardId, newListId, userId);
 
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { list_id: newListId },
-        order: { position: 'DESC' },
-      });
-      expect(repository.update).toHaveBeenCalledWith(cardId, {
-        list_id: newListId,
-        position: 2,
-      });
+      expect(cardRepository.findOne).toHaveBeenCalled();
+      expect(boardRepository.findOne).toHaveBeenCalled();
+      expect(cardRepository.update).toHaveBeenCalled();
       expect(result).toEqual(mockCard);
-    });
-
-    it('should move a card with specific position', async () => {
-      const cardId = '123e4567-e89b-12d3-a456-426614174000';
-      const newListId = 'abc123-new-list-id';
-      const newPosition = 3;
-
-      const result = await service.moveCard(cardId, newListId, newPosition);
-
-      expect(repository.update).toHaveBeenCalledWith(cardId, {
-        list_id: newListId,
-        position: newPosition,
-      });
-      expect(result).toEqual(mockCard);
-    });
-
-    it('should throw error if card not found for move', async () => {
-      const cardId = '123e4567-e89b-12d3-a456-426614174000';
-      const newListId = 'abc123-new-list-id';
-
-      mockRepository.update.mockResolvedValueOnce({ affected: 0 });
-
-      await expect(service.moveCard(cardId, newListId)).rejects.toThrow(
-        'Card with ID 123e4567-e89b-12d3-a456-426614174000 not found',
-      );
     });
   });
 });

@@ -68,9 +68,10 @@ describe('CardController', () => {
       };
       const listId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await controller.create(listId, createCardDto);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.create(listId, createCardDto, req);
 
-      expect(service.create).toHaveBeenCalledWith(listId, createCardDto);
+      expect(service.create).toHaveBeenCalledWith(listId, createCardDto, 'test-user-id');
       expect(result).toEqual(mockCard);
     });
   });
@@ -79,9 +80,10 @@ describe('CardController', () => {
     it('should return all cards for a list', async () => {
       const listId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await controller.findByList(listId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.findByList(listId, req);
 
-      expect(service.findByList).toHaveBeenCalledWith(listId);
+      expect(service.findByList).toHaveBeenCalledWith(listId, 'test-user-id');
       expect(result).toEqual([mockCard]);
     });
   });
@@ -90,9 +92,10 @@ describe('CardController', () => {
     it('should return a card by id', async () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
 
-      const result = await controller.findOne(cardId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.findOne(cardId, req);
 
-      expect(service.findOne).toHaveBeenCalledWith(cardId);
+      expect(service.findOne).toHaveBeenCalledWith(cardId, 'test-user-id');
       expect(result).toEqual(mockCard);
     });
   });
@@ -104,9 +107,10 @@ describe('CardController', () => {
         title: 'Updated Card',
       };
 
-      const result = await controller.update(cardId, updateCardDto);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.update(cardId, updateCardDto, req);
 
-      expect(service.update).toHaveBeenCalledWith(cardId, updateCardDto);
+      expect(service.update).toHaveBeenCalledWith(cardId, updateCardDto, 'test-user-id');
       expect(result).toEqual(mockCard);
     });
   });
@@ -119,11 +123,13 @@ describe('CardController', () => {
         newPosition: 2,
       };
 
-      const result = await controller.moveCard(cardId, moveData);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.moveCard(cardId, moveData, req);
 
       expect(service.moveCard).toHaveBeenCalledWith(
         cardId,
         moveData.newListId,
+        'test-user-id',
         moveData.newPosition,
       );
       expect(result).toEqual(mockCard);
@@ -134,9 +140,10 @@ describe('CardController', () => {
     it('should remove a card', async () => {
       const cardId = '123e4567-e89b-12d3-a456-426614174000';
 
-      const result = await controller.remove(cardId);
+      const req = { user: { userId: 'test-user-id' } };
+      const result = await controller.remove(cardId, req);
 
-      expect(service.remove).toHaveBeenCalledWith(cardId);
+      expect(service.remove).toHaveBeenCalledWith(cardId, 'test-user-id');
       expect(result).toEqual({ message: 'Card removed successfully' });
     });
   });

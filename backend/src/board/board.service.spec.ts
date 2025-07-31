@@ -113,22 +113,24 @@ describe('BoardService', () => {
   describe('findOne', () => {
     it('should return a board by id', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await service.findOne(boardId);
+      const result = await service.findOne(boardId, userId);
 
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id: boardId },
+        where: { id: boardId, user_id: userId },
       });
       expect(result).toEqual(mockBoard);
     });
 
     it('should throw error if board not found', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
 
       mockRepository.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.findOne(boardId)).rejects.toThrow(
-        'Board with ID 123e4567-e89b-12d3-a456-426614174000 not found',
+      await expect(service.findOne(boardId, userId)).rejects.toThrow(
+        'Board with ID 123e4567-e89b-12d3-a456-426614174000 not found or access denied',
       );
     });
   });
@@ -136,29 +138,34 @@ describe('BoardService', () => {
   describe('update', () => {
     it('should update a board successfully', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
       const updateBoardDto: UpdateBoardDto = {
         name: 'Updated Board',
       };
 
-      const result = await service.update(boardId, updateBoardDto);
+      const result = await service.update(boardId, updateBoardDto, userId);
 
-      expect(repository.update).toHaveBeenCalledWith(boardId, updateBoardDto);
+      expect(repository.update).toHaveBeenCalledWith(
+        { id: boardId, user_id: userId },
+        updateBoardDto
+      );
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id: boardId },
+        where: { id: boardId, user_id: userId },
       });
       expect(result).toEqual(mockBoard);
     });
 
     it('should throw error if board not found for update', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
       const updateBoardDto: UpdateBoardDto = {
         name: 'Updated Board',
       };
 
       mockRepository.update.mockResolvedValueOnce({ affected: 0 });
 
-      await expect(service.update(boardId, updateBoardDto)).rejects.toThrow(
-        'Board with ID 123e4567-e89b-12d3-a456-426614174000 not found',
+      await expect(service.update(boardId, updateBoardDto, userId)).rejects.toThrow(
+        'Board with ID 123e4567-e89b-12d3-a456-426614174000 not found or access denied',
       );
     });
   });
@@ -166,21 +173,23 @@ describe('BoardService', () => {
   describe('remove', () => {
     it('should remove a board successfully', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
 
-      const result = await service.remove(boardId);
+      const result = await service.remove(boardId, userId);
 
-      expect(repository.delete).toHaveBeenCalledWith(boardId);
+      expect(repository.delete).toHaveBeenCalledWith({ id: boardId, user_id: userId });
       expect(result).toEqual({ message: 'Board removed successfully' });
     });
 
     it('should return not found message if board not found for deletion', async () => {
       const boardId = '123e4567-e89b-12d3-a456-426614174000';
+      const userId = '987f6543-e21a-43b2-b123-987654321000';
 
       mockRepository.delete.mockResolvedValueOnce({ affected: 0 });
 
-      const result = await service.remove(boardId);
+      const result = await service.remove(boardId, userId);
 
-      expect(result).toEqual({ message: 'Board not found' });
+      expect(result).toEqual({ message: 'Board not found or access denied' });
     });
   });
 });
