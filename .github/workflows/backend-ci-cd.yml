@@ -16,6 +16,21 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: tododb_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,13 +49,62 @@ jobs:
         working-directory: backend
         run: pnpm install --no-frozen-lockfile
 
+      - name: Create test database user
+        run: |
+          PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "CREATE USER testappuser WITH PASSWORD 'testapppass';"
+          PGPASSWORD=testpass psql -h localhost -U testuser -d tododb_test -c "GRANT ALL PRIVILEGES ON DATABASE tododb_test TO testappuser;"
+
+      - name: Build app (needed for migrations)
+        working-directory: backend
+        run: pnpm run build
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: tododb_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_APP_USER: testappuser
+          POSTGRES_APP_PASSWORD: testapppass
+          JWT_SECRET: test-secret
+
+      - name: Run database migrations
+        working-directory: backend
+        run: pnpm run migration:run
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: tododb_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_APP_USER: testappuser
+          POSTGRES_APP_PASSWORD: testapppass
+          JWT_SECRET: test-secret
+
       - name: Run unit tests
         working-directory: backend
         run: pnpm run test
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: tododb_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_APP_USER: testappuser
+          POSTGRES_APP_PASSWORD: testapppass
+          JWT_SECRET: test-secret
 
       - name: Run test coverage
         working-directory: backend
         run: pnpm run test:cov
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: tododb_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_APP_USER: testappuser
+          POSTGRES_APP_PASSWORD: testapppass
+          JWT_SECRET: test-secret
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5
@@ -48,7 +112,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: backend/coverage/lcov.info
           flags: backend
-
-      - name: Build app
-        working-directory: backend
-        run: pnpm run build
