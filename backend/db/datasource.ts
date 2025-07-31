@@ -18,7 +18,7 @@ export const dataSourceOptions: DataSourceOptions = {
   migrationsTableName: 'migrations',
   migrationsRun: false,
   synchronize: process.env.ENV !== 'production',
-  logging: process.env.ENV !== 'production',
+  logging: false,
   extra: {
     connectionLimit: 10,
   },
