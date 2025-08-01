@@ -17,7 +17,7 @@ export const dataSourceOptions: DataSourceOptions = {
   migrations: ['dist/db/migrations/*.js'],
   migrationsTableName: 'migrations',
   migrationsRun: false,
-  synchronize: process.env.ENV !== 'production',
+  synchronize: process.env.NODE_ENV !== 'production',
   logging: false,
   extra: {
     connectionLimit: 10,

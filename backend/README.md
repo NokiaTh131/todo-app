@@ -1,15 +1,12 @@
 # Todo App API Documentation
 
-## Base URL
+## Base URL(Can be change)
 ```
 http://localhost:3000
 ```
 
 ## Authentication
-All endpoints require JWT Bearer token in Authorization header:
-```
-Authorization: Bearer <your-jwt-token>
-```
+All endpoints use JWT authentication via HTTP-only cookies. After login, the JWT token is automatically set as a cookie and included in subsequent requests.
 
 ---
 
@@ -37,26 +34,31 @@ Content-Type: application/json
   "password": "string"
 }
 ```
-**Response:** JWT token for authentication
+**Response:** Sets HTTP-only cookie with JWT token for authentication
+
+### Logout
+```http
+POST /auth/logout
+```
+**Response:** Clears authentication cookie
 
 ---
 
-## 👤 User Endpoints
+## User Endpoints
 
 ### Get Profile
 ```http
 GET /users/profile
-Authorization: Bearer <token>
 ```
+**Note:** Requires authentication cookie from login
 
 ---
 
-## 📋 Board Endpoints
+## Board Endpoints
 
 ### Create Board
 ```http
 POST /boards
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -69,19 +71,16 @@ Content-Type: application/json
 ### Get User's Boards
 ```http
 GET /boards
-Authorization: Bearer <token>
 ```
 
 ### Get Single Board
 ```http
-GET /boards/:id
-Authorization: Bearer <token>
+GET /board/:id
 ```
 
 ### Update Board
 ```http
-PATCH /boards/:id
-Authorization: Bearer <token>
+PATCH /board/:id
 Content-Type: application/json
 
 {
@@ -93,19 +92,17 @@ Content-Type: application/json
 
 ### Delete Board
 ```http
-DELETE /boards/:id
-Authorization: Bearer <token>
+DELETE /board/:id
 ```
 **Response:** `{ "message": "Board removed successfully" }`
 
 ---
 
-## 📝 List Endpoints
+## List Endpoints
 
 ### Create List in Board
 ```http
 POST /lists/board/:boardId
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -117,21 +114,18 @@ Content-Type: application/json
 ### Get Lists for Board
 ```http
 GET /lists/board/:boardId
-Authorization: Bearer <token>
 ```
 **Response:** Lists ordered by position (ascending) with their cards
 
 ### Get Single List
 ```http
 GET /lists/:id
-Authorization: Bearer <token>
 ```
 **Response:** List with its cards
 
 ### Update List
 ```http
 PATCH /lists/:id
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -143,18 +137,16 @@ Content-Type: application/json
 ### Delete List
 ```http
 DELETE /lists/:id
-Authorization: Bearer <token>
 ```
 **Response:** `{ "message": "List removed successfully" }`
 
 ---
 
-## 🎯 Card Endpoints
+## Card Endpoints
 
 ### Create Card in List
 ```http
 POST /cards/list/:listId
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -169,20 +161,17 @@ Content-Type: application/json
 ### Get Cards for List
 ```http
 GET /cards/list/:listId
-Authorization: Bearer <token>
 ```
 **Response:** Cards ordered by position (ascending)
 
 ### Get Single Card
 ```http
 GET /cards/:id
-Authorization: Bearer <token>
 ```
 
 ### Update Card
 ```http
 PATCH /cards/:id
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -197,7 +186,6 @@ Content-Type: application/json
 ### Move Card to Different List
 ```http
 PUT /cards/:id/move
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -209,7 +197,6 @@ Content-Type: application/json
 ### Delete Card
 ```http
 DELETE /cards/:id
-Authorization: Bearer <token>
 ```
 **Response:** `{ "message": "Card removed successfully" }`
 
@@ -220,7 +207,7 @@ Authorization: Bearer <token>
 ### User
 ```json
 {
-  "id": "uuid",
+  "id": "string",
   "username": "string",
   "email": "string",
   "created_at": "timestamp",
@@ -231,11 +218,11 @@ Authorization: Bearer <token>
 ### Board
 ```json
 {
-  "id": "uuid",
+  "id": "string",
   "name": "string",
   "description": "string",
   "background_color": "string",
-  "user_id": "uuid",
+  "user_id": "string",
   "created_at": "timestamp",
   "updated_at": "timestamp"
 }
@@ -244,10 +231,10 @@ Authorization: Bearer <token>
 ### List
 ```json
 {
-  "id": "uuid",
+  "id": "string",
   "name": "string",
   "position": "number",
-  "board_id": "uuid",
+  "board_id": "string",
   "created_at": "timestamp",
   "cards": "Card[]" (when included)
 }
@@ -256,13 +243,13 @@ Authorization: Bearer <token>
 ### Card
 ```json
 {
-  "id": "uuid",
+  "id": "string",
   "title": "string",
   "description": "string",
   "position": "number",
   "due_date": "timestamp",
   "cover_color": "string",
-  "list_id": "uuid",
+  "list_id": "string",
   "created_at": "timestamp",
   "updated_at": "timestamp"
 }
@@ -270,19 +257,13 @@ Authorization: Bearer <token>
 
 ---
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### Position Management
 - **Unique Constraints:** Each list must have unique position within a board, each card must have unique position within a list
 - **Auto-positioning:** If position not provided, items are added to the end
 - **Manual positioning:** If position is provided, it must be unique or will result in constraint error
 - **Frontend Responsibility:** Frontend should handle position reordering and gap management
-
-### Error Responses
-- **400:** Bad Request (validation errors)
-- **401:** Unauthorized (missing/invalid token)
-- **404:** Not Found (resource doesn't exist)
-- **500:** Internal Server Error (database/server errors)
 
 ### Date Format
 Use ISO 8601 format for dates: `"2024-12-31T23:59:59.000Z"`
@@ -296,31 +277,50 @@ Use ISO 8601 format for dates: `"2024-12-31T23:59:59.000Z"`
 
 ## Setup Instructions
 
-## Project setup
+### Development Setup
 
 ```bash
+# Install dependencies
 $ pnpm install
-```
 
-## Compile and run the project
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
+# Development mode
 $ pnpm run start:dev
 
-# production mode
+# Production mode
 $ pnpm run start:prod
 ```
 
-## Run tests
+### Docker Deployment
+
+1. Create `.env.deploy` file with required environment variables (see template below)
+2. Run with Docker Compose:
 
 ```bash
-# unit tests
-$ pnpm run test
+docker compose -f docker-compose.prod.yml --env-file=./.env.deploy up -d --build
+```
 
+### Environment Variables Template (.env.deploy)
+
+```bash
+# Database Configuration
+POSTGRES_DB=your_database_name
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_secure_postgres_password
+POSTGRES_APP_USER=your_app_user
+POSTGRES_APP_PASSWORD=your_secure_app_password
+POSTGRES_PORT=5432
+
+# Application Configuration
+APP_PORT=3000
+JWT_SECRET=your_super_secret_jwt_key
+
+# Environment
+NODE_ENV=production
+```
+
+### Run Tests
+
+```bash
 # e2e tests
 $ pnpm run test:e2e
 
@@ -340,30 +340,3 @@ $ mau deploy
 ```
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
