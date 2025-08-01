@@ -77,7 +77,7 @@ jobs:
           POSTGRES_APP_PASSWORD: testapppass
           JWT_SECRET: test-secret
 
-      - name: Run unit tests
+      - name: Run e2e tests
         working-directory: backend
         run: pnpm run test:e2e
         env:
