@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, ConflictException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,8 +15,14 @@ export class UserService {
   async create(userData: CreateUserDto): Promise<User> {
     try {
       const user = this.userRepository.create(userData);
-      return await this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+      // Remove password from response
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
     } catch (error) {
+      if (error.code === '23505') { // PostgreSQL unique constraint violation
+        throw new ConflictException('Email already exists');
+      }
       throw new InternalServerErrorException(
         `Failed to create user: ${error.message}`,
       );
