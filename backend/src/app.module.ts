@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { BoardModule } from './board/board.module';
 import { ListModule } from './list/list.module';
 import { CardModule } from './card/card.module';
-import { dataSourceOptions } from 'db/datasource';
+import { dataSourceOptions } from '../db/datasource';
 
 @Module({
   imports: [

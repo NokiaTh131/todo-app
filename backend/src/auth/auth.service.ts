@@ -19,14 +19,19 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<ValidatedUser | null> {
-    const user = await this.userService.findByEmail(email);
-    if (user && bcrypt.compareSync(password, user.password)) {
-      return {
-        id: user.id,
-        email: user.email,
-      };
+    try {
+      const user = await this.userService.findByEmail(email);
+      if (user && bcrypt.compareSync(password, user.password)) {
+        return {
+          id: user.id,
+          email: user.email,
+        };
+      }
+      return null;
+    } catch (error) {
+      // If user not found, return null instead of throwing error
+      return null;
     }
-    return null;
   }
 
   async login(user: ValidatedUser) {

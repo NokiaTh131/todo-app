@@ -50,4 +50,3 @@ volumes:
 networks:
   todo-net:
     driver: bridge
-
