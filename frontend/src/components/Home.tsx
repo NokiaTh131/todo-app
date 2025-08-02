@@ -4,7 +4,7 @@ function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-row h-screen">
+    <div className="flex flex-row h-screen bg-gray-100">
       <div className="basis-1/2">
         <img
           src="/todo-list-logo.png"
