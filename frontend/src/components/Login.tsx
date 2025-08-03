@@ -19,17 +19,16 @@ function Login() {
 
     console.log("Submit", form);
 
-    // axios
-    //   .request({
-    //     url: "/api/auth/login",
-    //     method: "post",
-    //     data: form,
-    //     withCredentials: true,
-    //   })
-    //   .then(() => {
-    //     navigate("/todo");
-    //   })
-    //   .catch((err) => alert(err));
+    axios
+      .request({
+        url: "/api/auth/login",
+        method: "post",
+        data: form,
+      })
+      .then(() => {
+        navigate("/todo");
+      })
+      .catch((err) => alert(err));
   };
 
   return (

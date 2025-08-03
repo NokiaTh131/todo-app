@@ -27,21 +27,31 @@ function Register() {
     }
     console.log("Submit", form);
 
-    // axios
-    //   .request({
-    //     url: "/api/auth/register",
-    //     method: "post",
-    //     data: {
-    //       username: form.username,
-    //       email: form.email,
-    //       password: form.password,
-    //     },
-    //     withCredentials: true,
-    //   })
-    //   .then(() => {
-    //     navigate("/todo");
-    //   })
-    //   .catch((err) => alert(err));
+    await axios
+      .request({
+        url: "/api/user/register",
+        method: "post",
+        data: {
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        },
+      })
+      .catch((err) => alert(err));
+
+    await axios
+      .request({
+        url: "/api/user/login",
+        method: "post",
+        data: {
+          email: form.email,
+          password: form.password,
+        },
+      })
+      .then(() => {
+        navigate("/todo");
+      })
+      .catch((err) => alert(err));
   };
 
   return (
