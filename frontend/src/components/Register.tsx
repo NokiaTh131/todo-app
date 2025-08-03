@@ -27,8 +27,8 @@ function Register() {
     }
     console.log("Submit", form);
 
-    await axios
-      .request({
+    try {
+      await axios.request({
         url: "/api/user/register",
         method: "post",
         data: {
@@ -36,22 +36,26 @@ function Register() {
           email: form.email,
           password: form.password,
         },
-      })
-      .catch((err) => alert(err));
+      });
 
-    await axios
-      .request({
+      await axios.request({
         url: "/api/auth/login",
         method: "post",
         data: {
           email: form.email,
           password: form.password,
         },
-      })
-      .then(() => {
-        navigate("/todo");
-      })
-      .catch((err) => alert(err));
+      });
+
+      navigate("/todo");
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        const msg = err.response?.data?.message || "Something went wrong";
+        setError(msg);
+      } else {
+        alert("Unexpected error");
+      }
+    }
   };
 
   return (

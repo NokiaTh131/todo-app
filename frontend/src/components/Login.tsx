@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 function Login() {
   const navigate = useNavigate();
 
+  const [error, setError] = useState("");
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -28,7 +30,13 @@ function Login() {
       .then(() => {
         navigate("/todo");
       })
-      .catch((err) => alert(err));
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          setError("Wrong email or password.");
+        } else {
+          alert("Unexpected error");
+        }
+      });
   };
 
   return (
@@ -66,6 +74,7 @@ function Login() {
               required
             />
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <button type="submit" className="my-4 w-full yellow-button">
             Login
           </button>
