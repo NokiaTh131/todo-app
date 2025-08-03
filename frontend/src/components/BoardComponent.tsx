@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Board, User } from "../types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ListComponent from "./ListComponent";
 
 function TodoList() {
   const navigate = useNavigate();
@@ -14,7 +15,11 @@ function TodoList() {
   });
   const [boards, setBoards] = useState<Board[]>([]);
   const [currentBoard, setCurrentBoard] = useState<Board>();
-  const [showModal, setShowModal] = useState(false);
+  const [modal, setModal] = useState({
+    title: "Create new board",
+    button: "Create",
+    show: false,
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewBoard({ ...newBoard, [e.target.name]: e.target.value });
@@ -31,26 +36,59 @@ function TodoList() {
     setBoards(board_res.data);
   }
 
-  function createBoard() {
+  function clearNewBoard() {
     setNewBoard({
       name: "",
       description: "",
       background_color: "",
     });
-    setShowModal(false);
+    setModal((prev) => ({
+      ...prev,
+      show: false,
+    }));
   }
 
-  function handleSubmit() {
-    axios
-      .request({
-        url: "/api/board",
-        method: "post",
-        data: newBoard,
-      })
-      .then(() => {
-        fetchData();
-      })
-      .catch((err) => alert(err));
+  function updateBoard(board: Board) {
+    setNewBoard({
+      name: board.name,
+      description: board.description,
+      background_color: "",
+    });
+    setModal({
+      title: `Update ${board.name} board`,
+      button: "Update",
+      show: true,
+    });
+  }
+
+  function handleSubmit(board: Board | undefined) {
+    if (modal.title == "Create") {
+      axios
+        .request({
+          url: "/api/board",
+          method: "post",
+          data: newBoard,
+        })
+        .then(() => {
+          fetchData();
+          clearNewBoard();
+        })
+        .catch((err) => alert(err));
+    } else if (board) {
+      axios
+        .request({
+          url: `/api/board/${board.id}`,
+          method: "put",
+          data: newBoard,
+        })
+        .then(() => {
+          fetchData();
+          clearNewBoard();
+        })
+        .catch((err) => alert(err));
+    } else {
+      alert("something went worng.");
+    }
   }
 
   function handleLogout() {
@@ -71,21 +109,42 @@ function TodoList() {
             My Board
           </h1>
           {boards.map((board) => (
-            <button
-              key={board.id}
-              onClick={() => setCurrentBoard(board)}
-              className={`w-full text-left px-10 py-2 cursor-pointer text-gray-200 ${
-                currentBoard?.id === board.id
-                  ? "bg-gray-600"
-                  : "hover:bg-gray-600"
-              }`}
-            >
-              {board.name}
-            </button>
+            <div key={board.id} className="relative">
+              <button
+                onClick={() => setCurrentBoard(board)}
+                className={`w-full text-left px-10 py-2 text-gray-200 ${
+                  currentBoard?.id === board.id
+                    ? "bg-gray-600"
+                    : "hover:bg-gray-600 cursor-pointer"
+                }`}
+              >
+                {board.name}
+              </button>
+
+              {currentBoard?.id === board.id && (
+                <div className="absolute top-1/2 right-4 -translate-y-1/2 flex space-x-2">
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => updateBoard(currentBoard)}
+                  >
+                    <img src="/edit.svg" alt="edit" className="w-5 h-5" />
+                  </button>
+                  <button className="cursor-pointer" onClick={() => {}}>
+                    <img src="/bin.svg" alt="delete" className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
           <button
             className="w-full text-gray-200 text-left px-8 py-2 hover:bg-gray-500 cursor-pointer"
-            onClick={() => setShowModal(true)}
+            onClick={() =>
+              setModal({
+                title: "Create new board",
+                button: "Create",
+                show: true,
+              })
+            }
           >
             + Create new board
           </button>
@@ -108,10 +167,10 @@ function TodoList() {
             </div>
           </div>
         </div>
-        {showModal && (
+        {modal.show && (
           <div className="fixed inset-0 bg-black/25 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg p-6 w-96">
-              <h2 className="text-lg font-bold mb-4">Create new board</h2>
+              <h2 className="text-lg font-bold mb-4">{modal.title}</h2>
               <input
                 type="text"
                 name="name"
@@ -130,25 +189,31 @@ function TodoList() {
               />
               <div className="flex justify-end space-x-2">
                 <button
-                  onClick={() => createBoard()}
+                  onClick={() => clearNewBoard()}
                   className="px-4 py-2 gray-button"
                 >
                   cancel
                 </button>
                 <button
                   onClick={() => {
-                    handleSubmit();
-                    setShowModal(false);
+                    handleSubmit(currentBoard);
+                    setModal((prev) => ({
+                      ...prev,
+                      show: false,
+                    }));
                   }}
                   className="px-4 py-2 yellow-button"
                 >
-                  create
+                  {modal.button}
                 </button>
               </div>
             </div>
           </div>
         )}
-        <div className="basis-4/5"></div>
+        <div className="basis-4/5">
+          {/* <main>{JSON.stringify(currentBoard)}</main> */}
+          {currentBoard && <ListComponent board={currentBoard} />}
+        </div>
       </div>
     </div>
   );
