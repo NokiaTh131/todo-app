@@ -3,6 +3,9 @@
 ## Overview
 Simple Trello-like kanban board application where users can access their personal boards, create lists, manage cards, and handle checklist items within cards.
 
+## Ref.
+[Getting Started With Trello (Demo)](https://www.youtube.com/watch?v=xky48zyL9iA)
+
 ## Project Structure
 ```
 ├── backend/     # NestJS API server
