@@ -61,8 +61,22 @@ function TodoList() {
     });
   }
 
+  function deleteBoard(board: Board) {
+    axios
+      .request({
+        url: `/api/board/${board.id}`,
+        method: "delete",
+      })
+      .then(() => {
+        fetchData();
+        clearNewBoard();
+        setCurrentBoard(undefined);
+      })
+      .catch((err) => alert(err));
+  }
+
   function handleSubmit(board: Board | undefined) {
-    if (modal.title == "Create") {
+    if (modal.button == "Create") {
       axios
         .request({
           url: "/api/board",
@@ -98,7 +112,12 @@ function TodoList() {
         method: "post",
       })
       .then(() => navigate("/"))
-      .catch((err) => alert(err));
+      .catch((err) => {
+        if (axios.isAxiosError(err)) {
+          const msg = err.response?.data?.message || "Something went wrong";
+          alert(msg);
+        }
+      });
   }
 
   return (
@@ -129,7 +148,12 @@ function TodoList() {
                   >
                     <img src="/edit.svg" alt="edit" className="w-5 h-5" />
                   </button>
-                  <button className="cursor-pointer" onClick={() => {}}>
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => {
+                      deleteBoard(currentBoard);
+                    }}
+                  >
                     <img src="/bin.svg" alt="delete" className="w-5 h-5" />
                   </button>
                 </div>
