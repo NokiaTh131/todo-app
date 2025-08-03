@@ -41,7 +41,7 @@ function Register() {
 
     await axios
       .request({
-        url: "/api/user/login",
+        url: "/api/auth/login",
         method: "post",
         data: {
           email: form.email,
