@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Board, List } from "../types";
 import { useEffect, useState, type FC } from "react";
-import CardComponent from "./cardComponent";
+import CardComponent from "./CardComponent";
 import { toast } from "sonner";
 
 interface Props {

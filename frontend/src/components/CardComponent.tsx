@@ -27,6 +27,7 @@ const CardComponent: FC<Props> = (prop) => {
 
   useEffect(() => {
     fetchData();
+    console.log("fetchData");
   }, [list]);
 
   function createCard() {
@@ -53,26 +54,14 @@ const CardComponent: FC<Props> = (prop) => {
         data: {
           title: currentCard?.title,
           description: currentCard?.description,
+          list_id: currentCard?.list_id,
           due_date: currentCard?.due_date,
         },
       })
       .then(() => {
         fetchData();
-        toast.success("Update success");
-      })
-      .catch((err) => alert(err));
-
-    axios
-      .request({
-        url: `/api/cards/${currentCard?.id}/move`,
-        method: "put",
-        data: {
-          newListId: currentCard?.list_id,
-        },
-      })
-      .then(() => {
-        fetchData();
         onCardUpdated();
+        toast.success("Update success");
       })
       .catch((err) => alert(err));
   }
