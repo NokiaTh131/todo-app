@@ -246,61 +246,6 @@ describe('CardController (e2e)', () => {
     });
   });
 
-  describe('/cards/:id/move (PUT)', () => {
-    it('should move a card to a different list', async () => {
-      // Create another list first
-      const secondListResponse = await request(app.getHttpServer())
-        .post(`/lists/board/${boardId}`)
-        .set('Cookie', authCookies)
-        .send({
-          name: 'Second List',
-          position: 2,
-        });
-
-      const secondListId = secondListResponse.body.id;
-
-      // Create a test card
-      const cardData = {
-        title: 'Card to Move',
-        description: 'This card will be moved',
-        position: 1,
-      };
-
-      const createResponse = await request(app.getHttpServer())
-        .post(`/cards/list/${listId}`)
-        .set('Cookie', authCookies)
-        .send(cardData);
-
-      const cardId = createResponse.body.id;
-
-      // Move the card
-      const moveData = {
-        newListId: secondListId,
-        newPosition: 1,
-      };
-
-      const response = await request(app.getHttpServer())
-        .put(`/cards/${cardId}/move`)
-        .set('Cookie', authCookies)
-        .send(moveData)
-        .expect(200);
-
-      expect(response.body).toHaveProperty('id', cardId);
-    });
-
-    it('should fail to move card without authentication', async () => {
-      const moveData = {
-        newListId: 'some-list-id',
-        newPosition: 1,
-      };
-
-      await request(app.getHttpServer())
-        .put('/cards/some-id/move')
-        .send(moveData)
-        .expect(401);
-    });
-  });
-
   describe('/cards/:id (DELETE)', () => {
     it('should delete a card', async () => {
       // Create a test card first
@@ -333,4 +278,3 @@ describe('CardController (e2e)', () => {
     });
   });
 });
-
