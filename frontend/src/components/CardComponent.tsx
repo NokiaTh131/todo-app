@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 import type { List, Card } from "../types";
 import { useEffect, useState, type FC } from "react";
 import dayjs from "dayjs";
@@ -39,6 +40,7 @@ const CardComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
+        toast.success("create success");
       })
       .catch((err) => alert(err));
   }
@@ -56,7 +58,7 @@ const CardComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
-        alert("update success");
+        toast.success("Update success");
       })
       .catch((err) => alert(err));
 
@@ -84,6 +86,7 @@ const CardComponent: FC<Props> = (prop) => {
       .then(() => {
         fetchData();
         setCurrentCard(undefined);
+        toast.success("delete success");
       })
       .catch((err) => alert(err));
   }
@@ -101,10 +104,17 @@ const CardComponent: FC<Props> = (prop) => {
       {cards.map((card) => (
         <button
           key={card.id}
-          className="w-full bg-gray-600 text-left card-button"
+          className="relative w-full bg-gray-600 text-left card-button"
           onClick={() => setCurrentCard(card)}
         >
           {card.title}
+          {card.due_date && (
+            <div className="absolute top-4 right-2 -translate-y-1/2  px-2 py-1 rounded">
+              {dayjs(card.due_date).isBefore(dayjs())
+                ? "Overdue"
+                : dayjs(card.due_date).fromNow(true) + " left"}
+            </div>
+          )}
         </button>
       ))}
       <button

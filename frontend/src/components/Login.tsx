@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function Login() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ function Login() {
         data: form,
       })
       .then(() => {
+        toast.success("login success");
         navigate("/todo");
       })
       .catch((err) => {

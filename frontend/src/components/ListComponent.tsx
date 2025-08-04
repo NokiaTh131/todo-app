@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Board, List } from "../types";
 import { useEffect, useState, type FC } from "react";
 import CardComponent from "./cardComponent";
+import { toast } from "sonner";
 
 interface Props {
   board: Board;
@@ -33,6 +34,7 @@ const ListComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
+        toast.success("create success");
       })
       .catch((err) => alert(err));
   }
@@ -50,6 +52,7 @@ const ListComponent: FC<Props> = (prop) => {
         fetchData();
         setEditName("");
         setEditingListId("");
+        toast.success("update success");
       })
       .catch((err) => alert(err));
   }
@@ -62,6 +65,7 @@ const ListComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
+        toast.success("delete success");
       })
       .catch((err) => alert(err));
   }

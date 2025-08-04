@@ -3,6 +3,7 @@ import type { Board, User } from "../types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ListComponent from "./ListComponent";
+import { toast } from "sonner";
 
 function TodoList() {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ function TodoList() {
         fetchData();
         clearNewBoard();
         setCurrentBoard(undefined);
+        toast.success("delete success");
       })
       .catch((err) => alert(err));
   }
@@ -86,6 +88,7 @@ function TodoList() {
         .then(() => {
           fetchData();
           clearNewBoard();
+          toast.success("create success");
         })
         .catch((err) => alert(err));
     } else if (board) {
@@ -98,6 +101,7 @@ function TodoList() {
         .then(() => {
           fetchData();
           clearNewBoard();
+          toast.success("update success");
         })
         .catch((err) => alert(err));
     } else {
@@ -111,7 +115,10 @@ function TodoList() {
         url: "/api/auth/logout",
         method: "post",
       })
-      .then(() => navigate("/"))
+      .then(() => {
+        toast.success("logout success");
+        navigate("/");
+      })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
           const msg = err.response?.data?.message || "Something went wrong";
