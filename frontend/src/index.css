@@ -17,7 +17,11 @@
 }
 
 .yellow-button {
-  @apply cursor-pointer outline-none text-black bg-yellow-300 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2;
+  @apply cursor-pointer outline-none text-gray-800 bg-yellow-300 hover:bg-yellow-500 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2;
+}
+
+.red-button {
+  @apply cursor-pointer outline-none text-gray-800 bg-red-400 hover:bg-red-600 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2;
 }
 
 .gray-button {
@@ -30,4 +34,8 @@
 
 .text-button {
   @apply text-sm text-gray-600 font-bold cursor-pointer hover:underline;
+}
+
+.card-button {
+  @apply p-2 rounded shadow text-sm text-gray-200 cursor-pointer hover:bg-gray-500;
 }
