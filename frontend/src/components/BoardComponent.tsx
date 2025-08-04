@@ -98,8 +98,10 @@ function TodoList() {
           method: "put",
           data: newBoard,
         })
-        .then(() => {
-          fetchData();
+        .then(async () => {
+          await fetchData();
+          const updated = await axios.get<Board>(`/api/board/${board.id}`);
+          setCurrentBoard(updated.data);
           clearNewBoard();
           toast.success("update success");
         })
@@ -245,7 +247,22 @@ function TodoList() {
         )}
         <div className="ml-[20%] flex-1">
           {/* <main>{JSON.stringify(currentBoard)}</main> */}
-          {currentBoard && <ListComponent board={currentBoard} />}
+          {currentBoard && (
+            <div className="flex flex-col h-full">
+              <div className="w-full bg-gray-100 px-6 py-4 border-b border-gray-300 shadow-sm">
+                <h1 className="text-xl font-semibold text-gray-800">
+                  {currentBoard.name}
+                </h1>
+                {currentBoard.description && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {currentBoard.description}
+                  </p>
+                )}
+              </div>
+
+              <ListComponent board={currentBoard} />
+            </div>
+          )}
           {!currentBoard && (
             <div className="flex items-center justify-center min-h-screen">
               <div className="text-center content">Create or select board.</div>
