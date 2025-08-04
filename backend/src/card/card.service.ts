@@ -163,6 +163,15 @@ export class CardService {
     await this.verifyCardOwnership(id, userId);
     if (updateCardDto.list_id) {
       await this.verifyListOwnership(updateCardDto.list_id, userId);
+      let position = updateCardDto.position;
+      if (!position) {
+        const lastCard = await this.cardRepository.findOne({
+          where: { list_id: updateCardDto.list_id },
+          order: { position: 'DESC' },
+        });
+        position = lastCard ? lastCard.position + 1 : 1;
+        updateCardDto.position = position;
+      }
     }
 
     try {
