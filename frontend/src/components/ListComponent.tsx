@@ -2,6 +2,7 @@ import axios from "axios";
 import type { Board, List } from "../types";
 import { useEffect, useState, type FC } from "react";
 import CardComponent from "./cardComponent";
+import { toast } from "sonner";
 
 interface Props {
   board: Board;
@@ -9,13 +10,13 @@ interface Props {
 
 const ListComponent: FC<Props> = (prop) => {
   const board = prop.board;
-  const [lists, setList] = useState<List[]>([]);
+  const [lists, setLists] = useState<List[]>([]);
   const [editingListId, setEditingListId] = useState<string>("");
   const [editName, setEditName] = useState<string>("");
 
   async function fetchData() {
     const res = await axios.get<List[]>(`api/lists/board/${board.id}`);
-    setList(res.data);
+    setLists(res.data);
   }
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const ListComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
+        toast.success("create success");
       })
       .catch((err) => alert(err));
   }
@@ -50,6 +52,7 @@ const ListComponent: FC<Props> = (prop) => {
         fetchData();
         setEditName("");
         setEditingListId("");
+        toast.success("update success");
       })
       .catch((err) => alert(err));
   }
@@ -62,6 +65,7 @@ const ListComponent: FC<Props> = (prop) => {
       })
       .then(() => {
         fetchData();
+        toast.success("delete success");
       })
       .catch((err) => alert(err));
   }
@@ -115,7 +119,11 @@ const ListComponent: FC<Props> = (prop) => {
               ) : null}
 
               {/* TODO: Render cards */}
-              <CardComponent />
+              <CardComponent
+                list={list}
+                allLists={lists}
+                onCardUpdated={fetchData}
+              />
             </div>
           ))}
 

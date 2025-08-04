@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function Register() {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ function Register() {
         },
       });
 
+      toast.success("register success");
       navigate("/todo");
     } catch (err: any) {
       if (axios.isAxiosError(err)) {

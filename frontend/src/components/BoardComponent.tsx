@@ -3,6 +3,7 @@ import type { Board, User } from "../types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ListComponent from "./ListComponent";
+import { toast } from "sonner";
 
 function TodoList() {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ function TodoList() {
         fetchData();
         clearNewBoard();
         setCurrentBoard(undefined);
+        toast.success("delete success");
       })
       .catch((err) => alert(err));
   }
@@ -86,6 +88,7 @@ function TodoList() {
         .then(() => {
           fetchData();
           clearNewBoard();
+          toast.success("create success");
         })
         .catch((err) => alert(err));
     } else if (board) {
@@ -95,9 +98,12 @@ function TodoList() {
           method: "put",
           data: newBoard,
         })
-        .then(() => {
-          fetchData();
+        .then(async () => {
+          await fetchData();
+          const updated = await axios.get<Board>(`/api/board/${board.id}`);
+          setCurrentBoard(updated.data);
           clearNewBoard();
+          toast.success("update success");
         })
         .catch((err) => alert(err));
     } else {
@@ -111,7 +117,10 @@ function TodoList() {
         url: "/api/auth/logout",
         method: "post",
       })
-      .then(() => navigate("/"))
+      .then(() => {
+        toast.success("logout success");
+        navigate("/");
+      })
       .catch((err) => {
         if (axios.isAxiosError(err)) {
           const msg = err.response?.data?.message || "Something went wrong";
@@ -123,7 +132,7 @@ function TodoList() {
   return (
     <div>
       <div className="flex flex-row h-screen bg-gray-50 ">
-        <div className="basis-1/5 bg-gray-700 flex flex-col">
+        <div className="fixed top-0 left-0 h-full w-1/5 bg-gray-700 flex flex-col z-10">
           <h1 className="mx-2 my-3 p-3 subheading text-gray-200 text-left border-b border-gray-500">
             My Board
           </h1>
@@ -193,8 +202,10 @@ function TodoList() {
         </div>
         {modal.show && (
           <div className="fixed inset-0 bg-black/25 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-6 w-96">
-              <h2 className="text-lg font-bold mb-4">{modal.title}</h2>
+            <div className="bg-gray-200 rounded-lg p-6 w-96">
+              <h2 className="text-lg text-gray-800 font-bold mb-4">
+                {modal.title}
+              </h2>
               <input
                 type="text"
                 name="name"
@@ -234,9 +245,29 @@ function TodoList() {
             </div>
           </div>
         )}
-        <div className="basis-4/5">
+        <div className="ml-[20%] flex-1">
           {/* <main>{JSON.stringify(currentBoard)}</main> */}
-          {currentBoard && <ListComponent board={currentBoard} />}
+          {currentBoard && (
+            <div className="flex flex-col h-full">
+              <div className="w-full bg-gray-100 px-6 py-4 border-b border-gray-300 shadow-sm">
+                <h1 className="text-xl font-semibold text-gray-800">
+                  {currentBoard.name}
+                </h1>
+                {currentBoard.description && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {currentBoard.description}
+                  </p>
+                )}
+              </div>
+
+              <ListComponent board={currentBoard} />
+            </div>
+          )}
+          {!currentBoard && (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center content">Create or select board.</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
