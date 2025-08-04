@@ -20,7 +20,7 @@ const ListComponent: FC<Props> = (prop) => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [board.id]);
 
   function creatList() {
     axios
