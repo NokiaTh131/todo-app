@@ -43,23 +43,12 @@ export class CardController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto, @Request() req: any) {
-    return this.cardService.update(id, updateCardDto, req.user.userId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put(':id/move')
-  moveCard(
-    @Param('id') cardId: string,
-    @Body() moveData: { newListId: string; newPosition?: number },
+  update(
+    @Param('id') id: string,
+    @Body() updateCardDto: UpdateCardDto,
     @Request() req: any,
   ) {
-    return this.cardService.moveCard(
-      cardId,
-      moveData.newListId,
-      req.user.userId,
-      moveData.newPosition,
-    );
+    return this.cardService.update(id, updateCardDto, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)

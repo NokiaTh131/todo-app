@@ -136,16 +136,16 @@ export class CardService {
     try {
       // Verify ownership first
       await this.verifyCardOwnership(id, userId);
-      
+
       // Then return card without relations
       const card = await this.cardRepository.findOne({
         where: { id },
       });
-      
+
       if (!card) {
         throw new InternalServerErrorException(`Card with ID ${id} not found`);
       }
-      
+
       return card;
     } catch (error) {
       throw new InternalServerErrorException(
@@ -161,6 +161,9 @@ export class CardService {
   ): Promise<Card> {
     // Verify user owns the card
     await this.verifyCardOwnership(id, userId);
+    if (updateCardDto.list_id) {
+      await this.verifyListOwnership(updateCardDto.list_id, userId);
+    }
 
     try {
       // Convert due_date string to Date if provided
@@ -206,49 +209,6 @@ export class CardService {
       }
       throw new InternalServerErrorException(
         `Failed to remove card: ${error.message}`,
-      );
-    }
-  }
-
-  async moveCard(
-    cardId: string,
-    newListId: string,
-    userId: string,
-    newPosition?: number,
-  ): Promise<Card> {
-    // Verify user owns both the card and the target list
-    await this.verifyCardOwnership(cardId, userId);
-    await this.verifyListOwnership(newListId, userId);
-
-    let position = newPosition;
-    if (!position) {
-      const lastCard = await this.cardRepository.findOne({
-        where: { list_id: newListId },
-        order: { position: 'DESC' },
-      });
-      position = lastCard ? lastCard.position + 1 : 1;
-    }
-
-    try {
-      const result = await this.cardRepository.update(cardId, {
-        list_id: newListId,
-        position,
-      });
-
-      if (result.affected === 0) {
-        throw new Error(`Card with ID ${cardId} not found`);
-      }
-
-      return await this.findOne(cardId, userId);
-    } catch (error) {
-      if (
-        error.message.includes('not found') ||
-        error.message.includes('Access denied')
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to move card: ${error.message}`,
       );
     }
   }

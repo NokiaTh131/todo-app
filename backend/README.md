@@ -180,17 +180,7 @@ Content-Type: application/json
   "position": "number" (optional),
   "due_date": "string" (optional, ISO date format),
   "cover_color": "string" (optional)
-}
-```
-
-### Move Card to Different List
-```http
-PUT /cards/:id/move
-Content-Type: application/json
-
-{
-  "newListId": "string",
-  "newPosition": "number" (optional, moves to end if not provided)
+  "list_id": "string" (optional)
 }
 ```
 
