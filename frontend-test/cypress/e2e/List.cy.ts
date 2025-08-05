@@ -1,6 +1,5 @@
 describe("Todo List", () => {
   const boardName = "test-board";
-  const listName = "My new list";
   const updatedName = "Updated list name";
 
   beforeEach(() => {
@@ -21,14 +20,14 @@ describe("Todo List", () => {
   });
 
   it("should create a new list", () => {
-    cy.get('[data-cy^="board-"]').first().click();
+    cy.contains(boardName).click();
     cy.get('[data-cy="add-list-button"]').click();
 
     cy.contains("New board").should("exist");
   });
 
   it("should edit list name", () => {
-    cy.get('[data-cy^="board-"]').first().click();
+    cy.contains(boardName).click();
     cy.get('[data-cy^="edit-list-button-"]').last().click();
 
     cy.get('[data-cy^="input-edit-list-"]')
@@ -39,9 +38,15 @@ describe("Todo List", () => {
   });
 
   it("should delete the list", () => {
-    cy.get('[data-cy^="board-"]').first().click();
+    cy.contains(boardName).click();
     cy.get('[data-cy^="delete-list-"]').last().click();
 
     cy.contains(updatedName).should("not.exist");
+  });
+
+  it("clear board", () => {
+    cy.contains(boardName).click();
+    cy.get('[data-cy="delete-button"]').click();
+    cy.contains(boardName).should("not.exist");
   });
 });
