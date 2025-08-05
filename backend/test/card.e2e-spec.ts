@@ -267,7 +267,7 @@ describe('CardController (e2e)', () => {
         .expect(200);
 
       // Verify the card is deleted by trying to get it (expect 404 or 500 depending on implementation)
-      const verifyResponse = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .get(`/cards/${cardId}`)
         .set('Cookie', authCookies)
         .expect(500);

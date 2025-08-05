@@ -244,7 +244,7 @@ describe('ListController (e2e)', () => {
         .expect(200);
 
       // Verify the list is deleted by trying to get it (expect 404, 401, or 500 depending on implementation)
-      const verifyResponse = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .get(`/lists/${listId}`)
         .set('Cookie', authCookies)
         .expect(401);
@@ -255,4 +255,3 @@ describe('ListController (e2e)', () => {
     });
   });
 });
-

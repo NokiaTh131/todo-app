@@ -224,8 +224,7 @@ describe('BoardController (e2e)', () => {
         .set('Cookie', authCookies)
         .expect(200);
 
-      // Verify the board is deleted by trying to get it (expect 404 or 500 depending on implementation)
-      const verifyResponse = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .get(`/board/${boardId}`)
         .set('Cookie', authCookies)
         .expect(500);
@@ -236,4 +235,3 @@ describe('BoardController (e2e)', () => {
     });
   });
 });
-
