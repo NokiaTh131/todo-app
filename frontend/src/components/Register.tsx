@@ -70,13 +70,18 @@ function Register() {
       </button>
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="subheading mb-6 text-center">Register</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          data-cy="register-form"
+        >
           <div className="space-y-2">
             <p className="content">Username</p>
             <input
               type="text"
               name="username"
               placeholder="Enter your username"
+              data-cy="input-username"
               value={form.username}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
@@ -89,6 +94,7 @@ function Register() {
               type="email"
               name="email"
               placeholder="Enter your email"
+              data-cy="input-email"
               value={form.email}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
@@ -101,6 +107,7 @@ function Register() {
               type="password"
               name="password"
               placeholder="Enter your password"
+              data-cy="input-password"
               value={form.password}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
@@ -113,19 +120,29 @@ function Register() {
               type="password"
               name="confirm_password"
               placeholder="Confirm your password"
+              data-cy="input-confirm-password"
               value={form.confirm_password}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
               required
             />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm" data-cy="error-message">
+                {error}
+              </p>
+            )}
           </div>
-          <button type="submit" className="my-4 w-full yellow-button">
+          <button
+            type="submit"
+            className="my-4 w-full yellow-button"
+            data-cy="submit-register"
+          >
             Register
           </button>
         </form>
         <button
           className="w-full text-button"
+          data-cy="to-login"
           onClick={() => navigate("/login")}
         >
           Already have an account? Sign in

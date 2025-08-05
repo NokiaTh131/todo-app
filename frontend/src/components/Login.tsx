@@ -51,13 +51,18 @@ function Login() {
       </button>
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="subheading mb-6 text-center">Login</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          data-cy="login-form"
+        >
           <div className="space-y-2">
             <p className="content">Email</p>
             <input
               type="email"
               name="email"
               placeholder="Enter your email"
+              data-cy="input-email"
               value={form.email}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
@@ -70,18 +75,28 @@ function Login() {
               type="password"
               name="password"
               placeholder="Enter your password"
+              data-cy="input-password"
               value={form.password}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md placeholder"
               required
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button type="submit" className="my-4 w-full yellow-button">
+          {error && (
+            <p className="text-red-500 text-sm" data-cy="error-message">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            className="my-4 w-full yellow-button"
+            data-cy="submit-login"
+          >
             Login
           </button>
           <button
             className="w-full text-button"
+            data-cy="to-register"
             onClick={() => navigate("/register")}
           >
             Don't have an account? Sign up
