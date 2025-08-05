@@ -140,6 +140,7 @@ function TodoList() {
             <div key={board.id} className="relative">
               <button
                 onClick={() => setCurrentBoard(board)}
+                data-cy={`board-${board.id}`}
                 className={`w-full text-left px-10 py-2 text-gray-200 ${
                   currentBoard?.id === board.id
                     ? "bg-gray-600"
@@ -154,6 +155,7 @@ function TodoList() {
                   <button
                     className="cursor-pointer"
                     onClick={() => updateBoard(currentBoard)}
+                    data-cy="edit-button"
                   >
                     <img src="/edit.svg" alt="edit" className="w-5 h-5" />
                   </button>
@@ -162,6 +164,7 @@ function TodoList() {
                     onClick={() => {
                       deleteBoard(currentBoard);
                     }}
+                    data-cy="delete-button"
                   >
                     <img src="/bin.svg" alt="delete" className="w-5 h-5" />
                   </button>
@@ -178,6 +181,7 @@ function TodoList() {
                 show: true,
               })
             }
+            data-cy="create-board-button"
           >
             + Create new board
           </button>
@@ -210,6 +214,7 @@ function TodoList() {
                 type="text"
                 name="name"
                 placeholder="Name"
+                data-cy="input-board-name"
                 value={newBoard.name}
                 onChange={handleChange}
                 className="w-full p-2 mb-3 border border-gray-300 rounded"
@@ -218,6 +223,7 @@ function TodoList() {
                 type="text"
                 name="description"
                 placeholder="Description"
+                data-cy="input-board-description"
                 value={newBoard.description}
                 onChange={handleChange}
                 className="w-full p-2 mb-4 border border-gray-300 rounded"
@@ -238,6 +244,7 @@ function TodoList() {
                     }));
                   }}
                   className="px-4 py-2 yellow-button"
+                  data-cy="submit-board-button"
                 >
                   {modal.button}
                 </button>
@@ -250,11 +257,17 @@ function TodoList() {
           {currentBoard && (
             <div className="flex flex-col h-full">
               <div className="w-full bg-gray-100 px-6 py-4 border-b border-gray-300 shadow-sm">
-                <h1 className="text-xl font-semibold text-gray-800">
+                <h1
+                  className="text-xl font-semibold text-gray-800"
+                  data-cy="board-name"
+                >
                   {currentBoard.name}
                 </h1>
                 {currentBoard.description && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p
+                    className="text-sm text-gray-600 mt-1"
+                    data-cy="board-description"
+                  >
                     {currentBoard.description}
                   </p>
                 )}
