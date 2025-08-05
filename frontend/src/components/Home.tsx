@@ -23,12 +23,14 @@ function Home() {
           </p>
           <button
             className="w-full yellow-button"
+            data-cy="register-button"
             onClick={() => navigate("/register")}
           >
             Get Started
           </button>
           <button
             className="w-full text-button"
+            data-cy="login-button"
             onClick={() => navigate("/login")}
           >
             Already have an account? Sign in
