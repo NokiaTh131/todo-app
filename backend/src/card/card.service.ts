@@ -1,79 +1,33 @@
 import {
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from './entities/card.entity';
-import { List } from '../list/entities/list.entity';
-import { Board } from '../board/entities/board.entity';
+import { BaseService } from '../common/base.service';
+import { AuthorizationService } from '../common/authorization.service';
+import { PositionService } from '../common/position.service';
 
 @Injectable()
-export class CardService {
+export class CardService extends BaseService {
   constructor(
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
-    @InjectRepository(List)
-    private listRepository: Repository<List>,
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-  ) {}
-
-  private async verifyListOwnership(
-    listId: string,
-    userId: string,
-  ): Promise<void> {
-    const list = await this.listRepository.findOne({
-      where: { id: listId },
-      relations: ['board'],
-    });
-
-    if (!list) {
-      throw new InternalServerErrorException(
-        `List with ID ${listId} not found`,
-      );
-    }
-
-    const board = await this.boardRepository.findOne({
-      where: { id: list.board_id, user_id: userId },
-    });
-
-    if (!board) {
-      throw new UnauthorizedException(
-        `Access denied - List does not belong to user`,
-      );
-    }
+    private authorizationService: AuthorizationService,
+    private positionService: PositionService,
+  ) {
+    super();
   }
 
-  private async verifyCardOwnership(
-    cardId: string,
-    userId: string,
-  ): Promise<Card> {
-    const card = await this.cardRepository.findOne({
-      where: { id: cardId },
-      relations: ['list', 'list.board'],
-    });
-
-    if (!card) {
-      throw new InternalServerErrorException(
-        `Card with ID ${cardId} not found`,
-      );
+  private prepareCardData(cardDto: CreateCardDto | UpdateCardDto): any {
+    const data: any = { ...cardDto };
+    if (cardDto.due_date) {
+      data.due_date = this.positionService.convertDateIfProvided(cardDto.due_date);
     }
-
-    const board = await this.boardRepository.findOne({
-      where: { id: card.list.board_id, user_id: userId },
-    });
-
-    if (!board) {
-      throw new UnauthorizedException(
-        `Access denied - Card does not belong to user`,
-      );
-    }
-
-    return card;
+    return data;
   }
 
   async create(
@@ -81,77 +35,58 @@ export class CardService {
     createCardDto: CreateCardDto,
     userId: string,
   ): Promise<Card> {
-    // Verify user owns the list
-    await this.verifyListOwnership(listId, userId);
+    await this.authorizationService.verifyListOwnership(listId, userId);
 
-    // Get the next position if not provided
-    let position = createCardDto.position;
-    if (!position) {
-      const lastCard = await this.cardRepository.findOne({
-        where: { list_id: listId },
-        order: { position: 'DESC' },
-      });
-      position = lastCard ? lastCard.position + 1 : 1;
-    }
+    return this.handleDatabaseOperation<Card>(
+      async (): Promise<Card> => {
+        let position = createCardDto.position;
+        if (!position) {
+          position = await this.positionService.getNextPosition(
+            this.cardRepository,
+            { list_id: listId },
+          );
+        }
 
-    try {
-      // Convert due_date string to Date if provided
-      const dueDate = createCardDto.due_date
-        ? new Date(createCardDto.due_date)
-        : undefined;
+        const payload = {
+          ...this.prepareCardData(createCardDto),
+          list_id: listId,
+          position,
+        };
 
-      const payload = {
-        ...createCardDto,
-        list_id: listId,
-        position,
-        due_date: dueDate,
-      };
-
-      const card = this.cardRepository.create(payload);
-      return await this.cardRepository.save(card);
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Failed to create card: ${error.message}`,
-      );
-    }
+        const card = this.cardRepository.create(payload);
+        return (await this.cardRepository.save(card)) as unknown as Card;
+      },
+      'Failed to create card',
+    );
   }
 
   async findByList(listId: string, userId: string): Promise<Card[]> {
-    // Verify user owns the list
-    await this.verifyListOwnership(listId, userId);
+    await this.authorizationService.verifyListOwnership(listId, userId);
 
-    try {
-      return await this.cardRepository.find({
-        where: { list_id: listId },
-        order: { position: 'ASC' },
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Failed to find cards: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation<Card[]>(
+      async (): Promise<Card[]> => {
+        return await this.cardRepository.find({
+          where: { list_id: listId },
+          order: { position: 'ASC' } as any,
+        });
+      },
+      'Failed to find cards',
+    );
   }
 
   async findOne(id: string, userId: string): Promise<Card> {
-    try {
-      // Verify ownership first
-      await this.verifyCardOwnership(id, userId);
+    return this.handleDatabaseOperation<Card>(
+      async (): Promise<Card> => {
+        await this.authorizationService.verifyCardOwnership(id, userId);
 
-      // Then return card without relations
-      const card = await this.cardRepository.findOne({
-        where: { id },
-      });
+        const card = await this.cardRepository.findOne({
+          where: { id },
+        });
 
-      if (!card) {
-        throw new InternalServerErrorException(`Card with ID ${id} not found`);
-      }
-
-      return card;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Failed to find card: ${error.message}`,
-      );
-    }
+        return this.handleEntityNotFound(card, 'Card', id);
+      },
+      'Failed to find card',
+    );
   }
 
   async update(
@@ -159,66 +94,45 @@ export class CardService {
     updateCardDto: UpdateCardDto,
     userId: string,
   ): Promise<Card> {
-    // Verify user owns the card
-    await this.verifyCardOwnership(id, userId);
+    await this.authorizationService.verifyCardOwnership(id, userId);
+    
     if (updateCardDto.list_id) {
-      await this.verifyListOwnership(updateCardDto.list_id, userId);
-      let position = updateCardDto.position;
-      if (!position) {
-        const lastCard = await this.cardRepository.findOne({
-          where: { list_id: updateCardDto.list_id },
-          order: { position: 'DESC' },
-        });
-        position = lastCard ? lastCard.position + 1 : 1;
-        updateCardDto.position = position;
+      await this.authorizationService.verifyListOwnership(updateCardDto.list_id, userId);
+      
+      if (!updateCardDto.position) {
+        updateCardDto.position = await this.positionService.getNextPosition(
+          this.cardRepository,
+          { list_id: updateCardDto.list_id },
+        );
       }
     }
 
-    try {
-      // Convert due_date string to Date if provided
-      const updateData: any = { ...updateCardDto };
-      if (updateCardDto.due_date) {
-        updateData.due_date = new Date(updateCardDto.due_date);
-      }
-
-      const result = await this.cardRepository.update(id, updateData);
-      if (result.affected === 0) {
-        throw new Error(`Card with ID ${id} not found`);
-      }
-      return await this.findOne(id, userId);
-    } catch (error) {
-      if (
-        error.message.includes('not found') ||
-        error.message.includes('Access denied')
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to update card: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation<Card>(
+      async (): Promise<Card> => {
+        const updateData = this.prepareCardData(updateCardDto);
+        
+        const result = await this.cardRepository.update(id, updateData);
+        if (result.affected === 0) {
+          throw new InternalServerErrorException(`Card with ID ${id} not found`);
+        }
+        return await this.findOne(id, userId);
+      },
+      'Failed to update card',
+    );
   }
 
   async remove(id: string, userId: string): Promise<{ message: string }> {
-    // Verify user owns the card
-    await this.verifyCardOwnership(id, userId);
+    await this.authorizationService.verifyCardOwnership(id, userId);
 
-    try {
-      const result = await this.cardRepository.delete(id);
-      if (result.affected === 0) {
-        throw new Error(`Card with ID ${id} not found`);
-      }
-      return { message: 'Card removed successfully' };
-    } catch (error) {
-      if (
-        error.message.includes('not found') ||
-        error.message.includes('Access denied')
-      ) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to remove card: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation<{ message: string }>(
+      async (): Promise<{ message: string }> => {
+        const result = await this.cardRepository.delete(id);
+        if (result.affected === 0) {
+          throw new InternalServerErrorException(`Card with ID ${id} not found`);
+        }
+        return { message: 'Card removed successfully' };
+      },
+      'Failed to remove card',
+    );
   }
 }

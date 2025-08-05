@@ -4,13 +4,16 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { BaseService } from '../common/base.service';
 
 @Injectable()
-export class UserService {
+export class UserService extends BaseService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) {
+    super();
+  }
 
   async create(userData: CreateUserDto): Promise<User> {
     try {
@@ -30,71 +33,52 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    try {
-      const user = await this.userRepository.findOne({ where: { id } });
-      if (!user) {
-        throw new InternalServerErrorException(`User with ID ${id} not found`);
-      }
-      return user;
-    } catch (error) {
-      if (error.message.includes('not found')) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to find user: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation(
+      async () => {
+        const user = await this.userRepository.findOne({ where: { id } });
+        return this.handleEntityNotFound(user, 'User', id);
+      },
+      'Failed to find user',
+    );
   }
 
   async findByEmail(email: string): Promise<User> {
-    try {
-      const user = await this.userRepository.findOne({ where: { email } });
-      if (!user) {
-        throw new InternalServerErrorException(
-          `User with email ${email} not found`,
-        );
-      }
-      return user;
-    } catch (error) {
-      if (error.message.includes('not found')) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to find user: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation(
+      async () => {
+        const user = await this.userRepository.findOne({ where: { email } });
+        if (!user) {
+          throw new InternalServerErrorException(
+            `User with email ${email} not found`,
+          );
+        }
+        return user;
+      },
+      'Failed to find user',
+    );
   }
 
   async update(id: string, userData: UpdateUserDto): Promise<User> {
-    try {
-      const result = await this.userRepository.update(id, userData);
-      if (result.affected === 0) {
-        throw new InternalServerErrorException(`User with ID ${id} not found`);
-      }
-      return await this.findOne(id);
-    } catch (error) {
-      if (error.message.includes('not found')) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to update user: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation(
+      async () => {
+        const result = await this.userRepository.update(id, userData);
+        if (result.affected === 0) {
+          throw new InternalServerErrorException(`User with ID ${id} not found`);
+        }
+        return await this.findOne(id);
+      },
+      'Failed to update user',
+    );
   }
 
   async remove(id: string): Promise<void> {
-    try {
-      const result = await this.userRepository.delete(id);
-      if (result.affected === 0) {
-        throw new InternalServerErrorException(`User with ID ${id} not found`);
-      }
-    } catch (error) {
-      if (error.message.includes('not found')) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Failed to remove user: ${error.message}`,
-      );
-    }
+    return this.handleDatabaseOperation(
+      async () => {
+        const result = await this.userRepository.delete(id);
+        if (result.affected === 0) {
+          throw new InternalServerErrorException(`User with ID ${id} not found`);
+        }
+      },
+      'Failed to remove user',
+    );
   }
 }

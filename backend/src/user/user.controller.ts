@@ -10,6 +10,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetProfileResDto } from './dto/getprofile-res.dto';
+import { AuthenticatedRequest } from '../common/interfaces/request.interface';
 
 @Controller('user')
 export class UserController {
@@ -22,7 +23,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/profile')
-  async getProfile(@Request() req: any): Promise<GetProfileResDto> {
+  async getProfile(@Request() req: AuthenticatedRequest): Promise<GetProfileResDto> {
     const user_profile = await this.userService.findByEmail(req.user.email);
     return {
       id: user_profile.id,
