@@ -1,8 +1,11 @@
 import { DataSourceOptions } from 'typeorm';
+import { config } from 'dotenv';
 import { User } from '../src/user/entities/user.entity';
 import { Board } from '../src/board/entities/board.entity';
 import { List } from '../src/list/entities/list.entity';
 import { Card } from '../src/card/entities/card.entity';
+
+config();
 
 export const testDataSourceOptions: DataSourceOptions = {
   type: 'postgres',
