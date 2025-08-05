@@ -10,74 +10,85 @@ interface Props {
   list: List;
   allLists: List[];
   onCardUpdated: () => void;
+  isPending: Boolean;
+  startTransition: React.TransitionStartFunction;
 }
 
 const CardComponent: FC<Props> = (prop) => {
   const list = prop.list;
   const allLists = prop.allLists;
   const onCardUpdated = prop.onCardUpdated;
+  const isPending = prop.isPending;
+  const startTransition = prop.startTransition;
 
   const [cards, setCards] = useState<Card[]>([]);
   const [currentCard, setCurrentCard] = useState<Card>();
 
   async function fetchData() {
-    const res = await axios.get<Card[]>(`api/cards/list/${list.id}`);
-    setCards(res.data);
+    startTransition(async () => {
+      const res = await axios.get<Card[]>(`api/cards/list/${list.id}`);
+      setCards(res.data);
+    });
   }
 
   useEffect(() => {
     fetchData();
-    console.log("fetchData");
   }, [list]);
 
   function createCard() {
-    axios
-      .request({
-        url: `/api/cards/list/${list.id}`,
-        method: "post",
-        data: {
-          title: "New card",
-        },
-      })
-      .then(() => {
-        fetchData();
-        toast.success("create success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/cards/list/${list.id}`,
+          method: "post",
+          data: {
+            title: "New card",
+          },
+        })
+        .then(() => {
+          fetchData();
+          toast.success("create success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   function updateCard() {
-    axios
-      .request({
-        url: `/api/cards/${currentCard?.id}`,
-        method: "patch",
-        data: {
-          title: currentCard?.title,
-          description: currentCard?.description,
-          list_id: currentCard?.list_id,
-          due_date: currentCard?.due_date,
-        },
-      })
-      .then(() => {
-        fetchData();
-        onCardUpdated();
-        toast.success("Update success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/cards/${currentCard?.id}`,
+          method: "patch",
+          data: {
+            title: currentCard?.title,
+            description: currentCard?.description,
+            list_id: currentCard?.list_id,
+            due_date: currentCard?.due_date,
+          },
+        })
+        .then(() => {
+          fetchData();
+          onCardUpdated();
+          toast.success("Update success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   function deleteCard() {
-    axios
-      .request({
-        url: `/api/cards/${currentCard?.id}`,
-        method: "delete",
-      })
-      .then(() => {
-        fetchData();
-        setCurrentCard(undefined);
-        toast.success("delete success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/cards/${currentCard?.id}`,
+          method: "delete",
+        })
+        .then(() => {
+          fetchData();
+          setCurrentCard(undefined);
+          toast.success("delete success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   const handleChange = (
@@ -89,132 +100,134 @@ const CardComponent: FC<Props> = (prop) => {
   };
 
   return (
-    <div className="space-y-2">
-      {cards.map((card) => (
+    <div className={`${isPending ? "pointer-events-none" : ""}`}>
+      <div className="space-y-2">
+        {cards.map((card) => (
+          <button
+            data-cy={`card-button-${card.id}`}
+            key={card.id}
+            className="relative w-full bg-gray-600 text-left card-button"
+            onClick={() => setCurrentCard(card)}
+          >
+            {card.title}
+            {card.due_date && (
+              <div className="absolute top-4 right-2 -translate-y-1/2  px-2 py-1 rounded">
+                {dayjs(card.due_date).isBefore(dayjs())
+                  ? "Overdue"
+                  : dayjs(card.due_date).fromNow(true) + " left"}
+              </div>
+            )}
+          </button>
+        ))}
         <button
-          data-cy={`card-button-${card.id}`}
-          key={card.id}
-          className="relative w-full bg-gray-600 text-left card-button"
-          onClick={() => setCurrentCard(card)}
+          data-cy={`new-card-button-${list.id}`}
+          className="w-full border-2 border-dashed text-center card-button"
+          onClick={() => createCard()}
         >
-          {card.title}
-          {card.due_date && (
-            <div className="absolute top-4 right-2 -translate-y-1/2  px-2 py-1 rounded">
-              {dayjs(card.due_date).isBefore(dayjs())
-                ? "Overdue"
-                : dayjs(card.due_date).fromNow(true) + " left"}
-            </div>
-          )}
+          + Add new card
         </button>
-      ))}
-      <button
-        data-cy={`new-card-button-${list.id}`}
-        className="w-full border-2 border-dashed text-center card-button"
-        onClick={() => createCard()}
-      >
-        + Add new card
-      </button>
-      {currentCard && (
-        <div className="fixed inset-0 bg-black/25 flex justify-center items-center z-50">
-          <div className="relative bg-gray-200 rounded-lg p-6 w-1/2">
-            <div className="absolute top-4 right-4 -translate-y-1/2 flex space-x-2">
-              <button
-                data-cy="close-button"
-                className="cursor-pointer subheading text-gray-400"
-                onClick={() => setCurrentCard(undefined)}
-              >
-                x
-              </button>
-            </div>
-            <div className="flex flex-row items-baseline">
-              <input
-                data-cy="new-card-title"
-                type="text"
-                name="title"
-                className="subheading text-gray-800 resize-none"
-                style={{ width: `${(currentCard.title?.length || 1) + 1}ch` }}
-                value={currentCard.title}
-                onChange={handleChange}
-              />
-              <p className="mx-2 content">in list {list.name}</p>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                data-cy="new-card-description"
-                className="w-full p-2 border text-gray-700 border-gray-300 rounded resize-none"
-                name="description"
-                rows={3}
-                value={currentCard.description ?? ""}
-                onChange={handleChange}
-              />
-              <div className="flex flex-row">
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    name="due_date"
-                    className="p-2 border text-gray-700 border-gray-300 rounded"
-                    value={currentCard.due_date?.split("T")[0] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
+        {currentCard && (
+          <div className="fixed inset-0 bg-black/25 flex justify-center items-center z-50">
+            <div className="relative bg-gray-200 rounded-lg p-6 w-1/2">
+              <div className="absolute top-4 right-4 -translate-y-1/2 flex space-x-2">
+                <button
+                  data-cy="close-button"
+                  className="cursor-pointer subheading text-gray-400"
+                  onClick={() => setCurrentCard(undefined)}
+                >
+                  x
+                </button>
+              </div>
+              <div className="flex flex-row items-baseline">
+                <input
+                  data-cy="new-card-title"
+                  type="text"
+                  name="title"
+                  className="subheading text-gray-800 resize-none"
+                  style={{ width: `${(currentCard.title?.length || 1) + 1}ch` }}
+                  value={currentCard.title}
+                  onChange={handleChange}
+                />
+                <p className="mx-2 content">in list {list.name}</p>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  data-cy="new-card-description"
+                  className="w-full p-2 border text-gray-700 border-gray-300 rounded resize-none"
+                  name="description"
+                  rows={3}
+                  value={currentCard.description ?? ""}
+                  onChange={handleChange}
+                />
+                <div className="flex flex-row">
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Due Date
+                    </label>
+                    <input
+                      type="date"
+                      name="due_date"
+                      className="p-2 border text-gray-700 border-gray-300 rounded"
+                      value={currentCard.due_date?.split("T")[0] || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
 
-                <div className="mt-4 ml-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    List
-                  </label>
+                  <div className="mt-4 ml-5">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      List
+                    </label>
 
-                  <select
-                    data-cy="new-list-button"
-                    value={currentCard.list_id}
-                    onChange={(e) =>
-                      setCurrentCard((prev) =>
-                        prev ? { ...prev, list_id: e.target.value } : prev
-                      )
-                    }
-                    className="p-2 border border-gray-300 rounded w-full bg-gray-200 text-gray-800"
-                  >
-                    {allLists.map((l) => (
-                      <option
-                        key={l.id}
-                        value={l.id}
-                        data-cy={`new-list-${l.id}`}
-                      >
-                        {l.name}
-                      </option>
-                    ))}
-                  </select>
+                    <select
+                      data-cy="new-list-button"
+                      value={currentCard.list_id}
+                      onChange={(e) =>
+                        setCurrentCard((prev) =>
+                          prev ? { ...prev, list_id: e.target.value } : prev
+                        )
+                      }
+                      className="p-2 border border-gray-300 rounded w-full bg-gray-200 text-gray-800"
+                    >
+                      {allLists.map((l) => (
+                        <option
+                          key={l.id}
+                          value={l.id}
+                          data-cy={`new-list-${l.id}`}
+                        >
+                          {l.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className=" absolute bottom-1 right-4 -translate-y-1/2 flex space-x-2">
-              <button
-                data-cy="deleted-button"
-                className="red-button"
-                onClick={() => {
-                  deleteCard();
-                }}
-              >
-                Deleted
-              </button>
-              <button
-                data-cy="update-button"
-                className="yellow-button"
-                onClick={() => {
-                  updateCard();
-                }}
-              >
-                Update
-              </button>
+              <div className=" absolute bottom-1 right-4 -translate-y-1/2 flex space-x-2">
+                <button
+                  data-cy="deleted-button"
+                  className="red-button"
+                  onClick={() => {
+                    deleteCard();
+                  }}
+                >
+                  Deleted
+                </button>
+                <button
+                  data-cy="update-button"
+                  className="yellow-button"
+                  onClick={() => {
+                    updateCard();
+                  }}
+                >
+                  Update
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

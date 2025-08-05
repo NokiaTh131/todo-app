@@ -6,17 +6,24 @@ import { toast } from "sonner";
 
 interface Props {
   board: Board;
+  isPending: Boolean;
+  startTransition: React.TransitionStartFunction;
 }
 
-const ListComponent: FC<Props> = (prop) => {
-  const board = prop.board;
+const ListComponent: FC<Props> = ({
+  board,
+  isPending,
+  startTransition,
+}: Props) => {
   const [lists, setLists] = useState<List[]>([]);
   const [editingListId, setEditingListId] = useState<string>("");
   const [editName, setEditName] = useState<string>("");
 
   async function fetchData() {
-    const res = await axios.get<List[]>(`api/lists/board/${board.id}`);
-    setLists(res.data);
+    startTransition(async () => {
+      const res = await axios.get<List[]>(`api/lists/board/${board.id}`);
+      setLists(res.data);
+    });
   }
 
   useEffect(() => {
@@ -24,54 +31,60 @@ const ListComponent: FC<Props> = (prop) => {
   }, [board.id]);
 
   function creatList() {
-    axios
-      .request({
-        url: `/api/lists/board/${board.id}`,
-        method: "post",
-        data: {
-          name: "New board",
-        },
-      })
-      .then(() => {
-        fetchData();
-        toast.success("create success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/lists/board/${board.id}`,
+          method: "post",
+          data: {
+            name: "New board",
+          },
+        })
+        .then(() => {
+          fetchData();
+          toast.success("create success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   function updateList(list: List, name: string) {
-    axios
-      .request({
-        url: `/api/lists/${list.id}`,
-        method: "patch",
-        data: {
-          name: name,
-        },
-      })
-      .then(() => {
-        fetchData();
-        setEditName("");
-        setEditingListId("");
-        toast.success("update success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/lists/${list.id}`,
+          method: "patch",
+          data: {
+            name: name,
+          },
+        })
+        .then(() => {
+          fetchData();
+          setEditName("");
+          setEditingListId("");
+          toast.success("update success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   function deleteList(list: List) {
-    axios
-      .request({
-        url: `/api/lists/${list.id}`,
-        method: "delete",
-      })
-      .then(() => {
-        fetchData();
-        toast.success("delete success");
-      })
-      .catch((err) => alert(err));
+    startTransition(async () => {
+      axios
+        .request({
+          url: `/api/lists/${list.id}`,
+          method: "delete",
+        })
+        .then(() => {
+          fetchData();
+          toast.success("delete success");
+        })
+        .catch((err) => alert(err));
+    });
   }
 
   return (
-    <>
+    <div className={`${isPending ? "pointer-events-none" : ""}`}>
       <div className="p-4">
         <div className="flex flex-wrap gap-4 items-start">
           {lists.map((list) => (
@@ -127,6 +140,8 @@ const ListComponent: FC<Props> = (prop) => {
                 list={list}
                 allLists={lists}
                 onCardUpdated={fetchData}
+                isPending={isPending}
+                startTransition={startTransition}
               />
             </div>
           ))}
@@ -140,7 +155,7 @@ const ListComponent: FC<Props> = (prop) => {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Board, User } from "../types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import ListComponent from "./ListComponent";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 function TodoList() {
   const navigate = useNavigate();
 
+  const [isPending, startTransition] = useTransition();
   const [user, setUser] = useState<User>();
   const [newBoard, setNewBoard] = useState({
     name: "",
@@ -31,10 +32,12 @@ function TodoList() {
   }, []);
 
   async function fetchData() {
-    const profile_res = await axios.get<User>("api/user/profile");
-    const board_res = await axios.get<Board[]>("api/board");
-    setUser(profile_res.data);
-    setBoards(board_res.data);
+    startTransition(async () => {
+      const profile_res = await axios.get<User>("api/user/profile");
+      const board_res = await axios.get<Board[]>("api/board");
+      setUser(profile_res.data);
+      setBoards(board_res.data);
+    });
   }
 
   function clearNewBoard() {
@@ -63,74 +66,82 @@ function TodoList() {
   }
 
   function deleteBoard(board: Board) {
-    axios
-      .request({
-        url: `/api/board/${board.id}`,
-        method: "delete",
-      })
-      .then(() => {
-        fetchData();
-        clearNewBoard();
-        setCurrentBoard(undefined);
-        toast.success("delete success");
-      })
-      .catch((err) => alert(err));
-  }
-
-  function handleSubmit(board: Board | undefined) {
-    if (modal.button == "Create") {
+    startTransition(async () => {
       axios
         .request({
-          url: "/api/board",
-          method: "post",
-          data: newBoard,
+          url: `/api/board/${board.id}`,
+          method: "delete",
         })
         .then(() => {
           fetchData();
           clearNewBoard();
-          toast.success("create success");
+          setCurrentBoard(undefined);
+          toast.success("delete success");
         })
         .catch((err) => alert(err));
+    });
+  }
+
+  function handleSubmit(board: Board | undefined) {
+    if (modal.button == "Create") {
+      startTransition(async () => {
+        axios
+          .request({
+            url: "/api/board",
+            method: "post",
+            data: newBoard,
+          })
+          .then(() => {
+            fetchData();
+            clearNewBoard();
+            toast.success("create success");
+          })
+          .catch((err) => alert(err));
+      });
     } else if (board) {
-      axios
-        .request({
-          url: `/api/board/${board.id}`,
-          method: "put",
-          data: newBoard,
-        })
-        .then(async () => {
-          await fetchData();
-          const updated = await axios.get<Board>(`/api/board/${board.id}`);
-          setCurrentBoard(updated.data);
-          clearNewBoard();
-          toast.success("update success");
-        })
-        .catch((err) => alert(err));
+      startTransition(async () => {
+        axios
+          .request({
+            url: `/api/board/${board.id}`,
+            method: "put",
+            data: newBoard,
+          })
+          .then(async () => {
+            await fetchData();
+            const updated = await axios.get<Board>(`/api/board/${board.id}`);
+            setCurrentBoard(updated.data);
+            clearNewBoard();
+            toast.success("update success");
+          })
+          .catch((err) => alert(err));
+      });
     } else {
       alert("something went worng.");
     }
   }
 
   function handleLogout() {
-    axios
-      .request({
-        url: "/api/auth/logout",
-        method: "post",
-      })
-      .then(() => {
-        toast.success("logout success");
-        navigate("/");
-      })
-      .catch((err) => {
-        if (axios.isAxiosError(err)) {
-          const msg = err.response?.data?.message || "Something went wrong";
-          alert(msg);
-        }
-      });
+    startTransition(async () => {
+      axios
+        .request({
+          url: "/api/auth/logout",
+          method: "post",
+        })
+        .then(() => {
+          toast.success("logout success");
+          navigate("/");
+        })
+        .catch((err) => {
+          if (axios.isAxiosError(err)) {
+            const msg = err.response?.data?.message || "Something went wrong";
+            alert(msg);
+          }
+        });
+    });
   }
 
   return (
-    <div>
+    <div className={`${isPending ? "pointer-events-none" : ""}`}>
       <div className="flex flex-row h-screen bg-gray-50 ">
         <div className="fixed top-0 left-0 h-full w-1/5 bg-gray-700 flex flex-col z-10">
           <h1 className="mx-2 my-3 p-3 subheading text-gray-200 text-left border-b border-gray-500">
@@ -273,7 +284,11 @@ function TodoList() {
                 )}
               </div>
 
-              <ListComponent board={currentBoard} />
+              <ListComponent
+                board={currentBoard}
+                isPending={isPending}
+                startTransition={startTransition}
+              />
             </div>
           )}
           {!currentBoard && (
