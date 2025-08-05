@@ -76,6 +76,7 @@ const ListComponent: FC<Props> = (prop) => {
         <div className="flex flex-wrap gap-4 items-start">
           {lists.map((list) => (
             <div
+              data-cy={`list-${list.id}`}
               key={list.id}
               className="relative bg-gray-700 shadow-md rounded-md w-64 p-4"
             >

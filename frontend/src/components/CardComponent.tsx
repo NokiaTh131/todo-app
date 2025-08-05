@@ -92,6 +92,7 @@ const CardComponent: FC<Props> = (prop) => {
     <div className="space-y-2">
       {cards.map((card) => (
         <button
+          data-cy={`card-button-${card.id}`}
           key={card.id}
           className="relative w-full bg-gray-600 text-left card-button"
           onClick={() => setCurrentCard(card)}
@@ -107,6 +108,7 @@ const CardComponent: FC<Props> = (prop) => {
         </button>
       ))}
       <button
+        data-cy={`new-card-button-${list.id}`}
         className="w-full border-2 border-dashed text-center card-button"
         onClick={() => createCard()}
       >
@@ -117,6 +119,7 @@ const CardComponent: FC<Props> = (prop) => {
           <div className="relative bg-gray-200 rounded-lg p-6 w-1/2">
             <div className="absolute top-4 right-4 -translate-y-1/2 flex space-x-2">
               <button
+                data-cy="close-button"
                 className="cursor-pointer subheading text-gray-400"
                 onClick={() => setCurrentCard(undefined)}
               >
@@ -125,6 +128,7 @@ const CardComponent: FC<Props> = (prop) => {
             </div>
             <div className="flex flex-row items-baseline">
               <input
+                data-cy="new-card-title"
                 type="text"
                 name="title"
                 className="subheading text-gray-800 resize-none"
@@ -139,6 +143,7 @@ const CardComponent: FC<Props> = (prop) => {
                 Description
               </label>
               <textarea
+                data-cy="new-card-description"
                 className="w-full p-2 border text-gray-700 border-gray-300 rounded resize-none"
                 name="description"
                 rows={3}
@@ -165,6 +170,7 @@ const CardComponent: FC<Props> = (prop) => {
                   </label>
 
                   <select
+                    data-cy="new-list-button"
                     value={currentCard.list_id}
                     onChange={(e) =>
                       setCurrentCard((prev) =>
@@ -174,7 +180,11 @@ const CardComponent: FC<Props> = (prop) => {
                     className="p-2 border border-gray-300 rounded w-full bg-gray-200 text-gray-800"
                   >
                     {allLists.map((l) => (
-                      <option key={l.id} value={l.id}>
+                      <option
+                        key={l.id}
+                        value={l.id}
+                        data-cy={`new-list-${l.id}`}
+                      >
                         {l.name}
                       </option>
                     ))}
@@ -184,6 +194,7 @@ const CardComponent: FC<Props> = (prop) => {
             </div>
             <div className=" absolute bottom-1 right-4 -translate-y-1/2 flex space-x-2">
               <button
+                data-cy="deleted-button"
                 className="red-button"
                 onClick={() => {
                   deleteCard();
@@ -192,6 +203,7 @@ const CardComponent: FC<Props> = (prop) => {
                 Deleted
               </button>
               <button
+                data-cy="update-button"
                 className="yellow-button"
                 onClick={() => {
                   updateCard();
