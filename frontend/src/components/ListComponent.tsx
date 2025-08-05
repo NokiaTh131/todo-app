@@ -82,6 +82,7 @@ const ListComponent: FC<Props> = (prop) => {
               {editingListId === list.id ? (
                 <input
                   value={editName}
+                  data-cy={`input-edit-list-${list.id}`}
                   onChange={(e) => setEditName(e.target.value)}
                   onBlur={() => updateList(list, editName)}
                   onKeyDown={(e) => {
@@ -99,6 +100,7 @@ const ListComponent: FC<Props> = (prop) => {
               {editingListId !== list.id ? (
                 <div className="absolute top-8 right-4 -translate-y-1/2 flex space-x-2">
                   <button
+                    data-cy={`edit-list-button-${list.id}`}
                     className="cursor-pointer"
                     onClick={() => {
                       setEditName(list.name); // เตรียมชื่อเดิมมาใส่ input
@@ -108,6 +110,7 @@ const ListComponent: FC<Props> = (prop) => {
                     <img src="/edit.svg" alt="edit" className="w-5 h-5" />
                   </button>
                   <button
+                    data-cy={`delete-list-button-${list.id}`}
                     className="cursor-pointer"
                     onClick={() => {
                       deleteList(list); // ลบ list
@@ -127,7 +130,11 @@ const ListComponent: FC<Props> = (prop) => {
             </div>
           ))}
 
-          <button onClick={creatList} className="yellow-button">
+          <button
+            onClick={creatList}
+            className="yellow-button"
+            data-cy="add-list-button"
+          >
             + Add another list
           </button>
         </div>
