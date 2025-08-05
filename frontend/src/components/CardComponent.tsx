@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 import type { List, Card } from "../types";
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
@@ -99,6 +99,22 @@ const CardComponent: FC<Props> = (prop) => {
     );
   };
 
+  const maxPosition = useMemo(() =>
+    Math.max(...allLists.map(l => Number(l.position) || 0)),
+    [allLists]
+  );
+
+  const isLastList = useMemo(() =>
+    Number(list.position) === maxPosition,
+    [list.position, maxPosition]
+  );
+  const getDueDateDisplay = (dueDate: string) => {
+    if (isLastList) return "";
+    return dayjs(dueDate).isBefore(dayjs())
+      ? "Overdue"
+      : `${dayjs(dueDate).fromNow(true)} left`;
+  };
+
   return (
     <div className={`${isPending ? "pointer-events-none" : ""}`}>
       <div className="space-y-2">
@@ -112,9 +128,7 @@ const CardComponent: FC<Props> = (prop) => {
             {card.title}
             {card.due_date && (
               <div className="absolute top-4 right-2 -translate-y-1/2  px-2 py-1 rounded">
-                {dayjs(card.due_date).isBefore(dayjs())
-                  ? "Overdue"
-                  : dayjs(card.due_date).fromNow(true) + " left"}
+                {getDueDateDisplay(card.due_date)}
               </div>
             )}
           </button>
