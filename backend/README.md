@@ -14,7 +14,7 @@ All endpoints use JWT authentication via HTTP-only cookies. After login, the JWT
 
 ### Register User
 ```http
-POST /auth/register
+POST /user/register
 Content-Type: application/json
 
 {
