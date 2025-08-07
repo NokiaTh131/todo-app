@@ -115,6 +115,21 @@ const CardComponent: FC<Props> = (prop) => {
       : `${dayjs(dueDate).fromNow(true)} left`;
   };
 
+  function getContrastTextColor(hexColor: string): '#000000' | '#ffffff' {
+    let hex = hexColor.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(char => char + char).join('');
+    }
+    if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+      return '#ffffff';
+    }
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  }
+
   return (
     <div className={`${isPending ? "pointer-events-none" : ""}`}>
       <div className="space-y-2">
@@ -122,7 +137,8 @@ const CardComponent: FC<Props> = (prop) => {
           <button
             data-cy={`card-button-${card.id}`}
             key={card.id}
-            className="relative w-full bg-gray-600 text-left card-button"
+            className="relative w-full text-left card-button"
+            style={{ color: getContrastTextColor(card.cover_color), backgroundColor: card.cover_color }}
             onClick={() => setCurrentCard(card)}
           >
             {card.title}
