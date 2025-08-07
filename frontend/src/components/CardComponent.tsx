@@ -23,6 +23,7 @@ const CardComponent: FC<Props> = (prop) => {
 
   const [cards, setCards] = useState<Card[]>([]);
   const [currentCard, setCurrentCard] = useState<Card>();
+  const [originalListId, setOriginalListId] = useState<string>();
 
   async function fetchData() {
     startTransition(async () => {
@@ -55,17 +56,24 @@ const CardComponent: FC<Props> = (prop) => {
 
   function updateCard() {
     startTransition(async () => {
+      const listChanged = originalListId !== currentCard?.list_id;
+      const requestData: any = {
+        title: currentCard?.title,
+        description: currentCard?.description,
+        list_id: currentCard?.list_id,
+        due_date: currentCard?.due_date,
+        cover_color: currentCard?.cover_color,
+      };
+
+      if (!listChanged) {
+        requestData.position = currentCard?.position;
+      }
+
       axios
         .request({
           url: `/api/cards/${currentCard?.id}`,
           method: "patch",
-          data: {
-            title: currentCard?.title,
-            description: currentCard?.description,
-            list_id: currentCard?.list_id,
-            due_date: currentCard?.due_date,
-            cover_color: currentCard?.cover_color,
-          },
+          data: requestData,
         })
         .then(() => {
           fetchData();
@@ -140,7 +148,10 @@ const CardComponent: FC<Props> = (prop) => {
             key={card.id}
             className="relative w-full text-left card-button"
             style={{ color: getContrastTextColor(card.cover_color), backgroundColor: card.cover_color }}
-            onClick={() => setCurrentCard(card)}
+            onClick={() => {
+              setCurrentCard(card);
+              setOriginalListId(card.list_id);
+            }}
           >
             {card.title}
             {card.due_date && (
