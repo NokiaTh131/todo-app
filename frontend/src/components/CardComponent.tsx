@@ -64,6 +64,7 @@ const CardComponent: FC<Props> = (prop) => {
             description: currentCard?.description,
             list_id: currentCard?.list_id,
             due_date: currentCard?.due_date,
+            cover_color: currentCard?.cover_color,
           },
         })
         .then(() => {
@@ -194,6 +195,19 @@ const CardComponent: FC<Props> = (prop) => {
                 />
                 <div className="flex flex-row">
                   <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cover Color
+                    </label>
+                    <input
+                      type="color"
+                      name="cover_color"
+                      className="p-1 h-10 w-16 border border-gray-300 rounded cursor-pointer"
+                      value={currentCard.cover_color || "#ffffff"}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="mt-4 ml-5">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Due Date
                     </label>
