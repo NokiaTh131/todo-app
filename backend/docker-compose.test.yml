@@ -1,4 +1,4 @@
-name: todo-backend
+name: todo-app
 
 services:
   postgres:
@@ -21,7 +21,7 @@ services:
 
   app:
     image: monote/preflight-backend
-    container_name: todo-app
+    container_name: todo-backend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
