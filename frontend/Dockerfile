@@ -11,10 +11,10 @@ WORKDIR /app
 COPY . .
 
 # Install project dependencies using pnpm
-RUN npm install
+RUN pnpm install
 
 # Build the application (for example, compiles source code and bundles files)
-RUN npm run build
+RUN pnpm run build
 
 # Use the official Nginx image (Alpine version) for serving the built app
 FROM nginx:1.28.0-alpine AS production
