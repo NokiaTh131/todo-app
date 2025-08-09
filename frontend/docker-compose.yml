@@ -2,7 +2,7 @@ name: todo-app # You can also change this to another name to avoid warning with 
 services:
   frontend:
     container_name: pf-frontend
-    build: .
+    image: monote/preflight-frontend
     ports:
       - ${NGINX_PORT}:5173
     networks:
