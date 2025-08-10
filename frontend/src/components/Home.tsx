@@ -22,7 +22,7 @@ function Home() {
             ด้วยอินเทอร์เฟซที่ใช้งานง่ายและเรียบง่าย ให้คุณไม่พลาดทุกงานสำคัญ
           </p>
           <button
-            className="w-full yellow-button"
+            className="w-full red-button"
             data-cy="register-button"
             onClick={() => navigate("/register")}
           >
