@@ -6,6 +6,7 @@ config();
 
 const configService = new ConfigService();
 
+//create database
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: configService.getOrThrow<string>('POSTGRES_HOST'),
